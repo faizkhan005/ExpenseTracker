@@ -1,0 +1,476 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ExpenseTracker.Views.Dashboard"
+             Title="Dashboard">
+    <VerticalStackLayout>
+        <Label 
+            Text="Welcome to .NET MAUI!"
+            VerticalOptions="Center" 
+            HorizontalOptions="Center" />
+    </VerticalStackLayout>
+</ContentPage>-->
+<ContentPage x:Class="ExpenseTracker.Views.Dashboard"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:ExpenseTracker.Converters"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
+             xmlns:vm="clr-namespace:ExpenseTracker.ViewModels"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             Shell.NavBarIsVisible="False">
+
+    <ContentPage.BindingContext>
+        <vm:DashboardViewModel />
+    </ContentPage.BindingContext>
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:NegativeAmountColorConverter x:Key="AmountColorConverter" />
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibility" />
+
+            <!-- Colors -->
+            <Color x:Key="PrimaryPurple">#534AB7</Color>
+            <Color x:Key="LightPurple">#7F77DD</Color>
+            <Color x:Key="DarkHeader">#1a1a2e</Color>
+            <Color x:Key="DangerRed">#E24B4A</Color>
+            <Color x:Key="SuccessGreen">#1D9E75</Color>
+            <Color x:Key="MutedText">#6b7db3</Color>
+            <Color x:Key="CardBackground">#F8F8FC</Color>
+
+            <!-- Styles -->
+            <Style x:Key="SectionTitle" TargetType="Label">
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="TextColor" Value="#1a1a2e" />
+            </Style>
+
+            <Style x:Key="MutedLabel" TargetType="Label">
+                <Setter Property="FontSize" Value="11" />
+                <Setter Property="TextColor" Value="{StaticResource MutedText}" />
+            </Style>
+
+            <Style x:Key="MetricCard" TargetType="Border">
+                <Setter Property="BackgroundColor" Value="{StaticResource CardBackground}" />
+                <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+                <Setter Property="StrokeThickness" Value="1" />
+                <Setter Property="Stroke" Value="#EEEEF5" />
+                <Setter Property="Padding" Value="12" />
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <!-- Root scroll -->
+    <ScrollView>
+        <VerticalStackLayout Spacing="0">
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- HERO HEADER                                 -->
+            <!-- ═══════════════════════════════════════════ -->
+            <Grid BackgroundColor="{StaticResource DarkHeader}" Padding="16,52,16,24">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="16" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="16" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- Greeting row -->
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <VerticalStackLayout Grid.Column="0" Spacing="2">
+                        <Label
+                            FontSize="11"
+                            Text="Good morning,"
+                            TextColor="{StaticResource MutedText}" />
+                        <Label
+                            FontAttributes="Bold"
+                            FontSize="16"
+                            Text="{Binding GreetingName}"
+                            TextColor="White" />
+                    </VerticalStackLayout>
+
+                    <!-- Notification bell -->
+                    <Border
+                        Grid.Column="1"
+                        BackgroundColor="#2a2a40"
+                        HeightRequest="36"
+                        StrokeShape="RoundRectangle 18"
+                        StrokeThickness="0"
+                        VerticalOptions="Center"
+                        WidthRequest="36">
+                        <Grid>
+                            <Image
+                                HeightRequest="18"
+                                HorizontalOptions="Center"
+                                Source="icon_bell.png"
+                                VerticalOptions="Center"
+                                WidthRequest="18">
+                                <Image.Behaviors>
+                                    <toolkit:IconTintColorBehavior TintColor="White" />
+                                </Image.Behaviors>
+                            </Image>
+                            
+                            <!-- Notification dot -->
+                            <Border
+                                BackgroundColor="{StaticResource DangerRed}"
+                                HeightRequest="8"
+                                HorizontalOptions="End"
+                                StrokeShape="RoundRectangle 4"
+                                StrokeThickness="0"
+                                VerticalOptions="Start"
+                                WidthRequest="8"
+                                IsVisible="{Binding HasNotifications}" />
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- Spent label -->
+                <Label
+                    Grid.Row="2"
+                    CharacterSpacing="1"
+                    FontSize="10"
+                    Text="SPENT THIS MONTH"
+                    TextColor="{StaticResource MutedText}" />
+
+                <!-- Big amount -->
+                <HorizontalStackLayout Grid.Row="3" Spacing="0" VerticalOptions="Center">
+                    <Label
+                        FontAttributes="Bold"
+                        FontSize="38"
+                        Text="{Binding TotalSpentFormatted}"
+                        TextColor="White"
+                        VerticalOptions="End" />
+                </HorizontalStackLayout>
+
+                <!-- Budget subtitle -->
+                <Label
+                    Grid.Row="4"
+                    FontSize="11"
+                    Text="{Binding BudgetSubtitle}"
+                    TextColor="{StaticResource MutedText}" />
+
+                <!-- Budget progress bar -->
+                <Grid Grid.Row="6" RowSpacing="4">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="5" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Background track -->
+                    <Border
+                        Grid.Row="0"
+                        BackgroundColor="#2a2a40"
+                        HeightRequest="5"
+                        StrokeShape="RoundRectangle 3"
+                        StrokeThickness="0" />
+
+                    <!-- Fill bar using ProgressBar -->
+                    <ProgressBar
+                        Grid.Row="0"
+                        HeightRequest="5"
+                        Progress="{Binding BudgetProgress}"
+                        ProgressColor="{StaticResource LightPurple}"
+                        VerticalOptions="Center" />
+
+                    <!-- Labels row -->
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Label
+                            Grid.Column="0"
+                            FontSize="10"
+                            Text="$0"
+                            TextColor="{StaticResource MutedText}" />
+                        <Label
+                            Grid.Column="1"
+                            FontSize="10"
+                            HorizontalOptions="Center"
+                            Text="{Binding BudgetPercentLabel}"
+                            TextColor="{StaticResource LightPurple}" />
+                        <Label
+                            Grid.Column="2"
+                            FontSize="10"
+                            HorizontalOptions="End"
+                            Text="{Binding BudgetLimitFormatted}"
+                            TextColor="{StaticResource MutedText}" />
+                    </Grid>
+                </Grid>
+            </Grid>
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- METRIC CARDS ROW                           -->
+            <!-- ═══════════════════════════════════════════ -->
+            <Grid
+                ColumnSpacing="10"
+                Padding="16,16,16,0"
+                RowSpacing="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Saved this month -->
+                <Border Grid.Column="0" Style="{StaticResource MetricCard}">
+                    <VerticalStackLayout Spacing="4">
+                        <Label
+                            FontSize="10"
+                            Text="Saved this month"
+                            TextColor="#888" />
+                        <Label
+                            FontAttributes="Bold"
+                            FontSize="20"
+                            Text="{Binding SavedThisMonthFormatted}"
+                            TextColor="{StaticResource SuccessGreen}" />
+                        <HorizontalStackLayout Spacing="3">
+                            <Label
+                                FontSize="10"
+                                Text="{Binding SavingsChangeLabel}"
+                                TextColor="{Binding SavingsChangeLabelColor}" />
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Avg daily spend -->
+                <Border Grid.Column="1" Style="{StaticResource MetricCard}">
+                    <VerticalStackLayout Spacing="4">
+                        <Label
+                            FontSize="10"
+                            Text="Avg daily spend"
+                            TextColor="#888" />
+                        <Label
+                            FontAttributes="Bold"
+                            FontSize="20"
+                            Text="{Binding AvgDailySpendFormatted}"
+                            TextColor="#1a1a2e" />
+                        <HorizontalStackLayout Spacing="3">
+                            <Label
+                                FontSize="10"
+                                Text="{Binding DailySpendChangeLabel}"
+                                TextColor="{Binding DailySpendChangeLabelColor}" />
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- WEEKLY BAR CHART                           -->
+            <!-- ═══════════════════════════════════════════ -->
+            <VerticalStackLayout Padding="16,20,16,0" Spacing="10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Label
+                        Grid.Column="0"
+                        Style="{StaticResource SectionTitle}"
+                        Text="Spending this week" />
+                    <Label
+                        Grid.Column="1"
+                        FontSize="12"
+                        Text="Monthly ›"
+                        TextColor="{StaticResource PrimaryPurple}"
+                        VerticalOptions="Center">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding GoToMonthlyCommand}" />
+                        </Label.GestureRecognizers>
+                    </Label>
+                </Grid>
+
+                <!-- LiveCharts2 Bar Chart -->
+                <lvc:CartesianChart
+                    HeightRequest="140"
+                    LegendPosition="Hidden"
+                    Series="{Binding WeeklySeries}"
+                    XAxes="{Binding WeeklyXAxes}"
+                    YAxes="{Binding WeeklyYAxes}"
+                    ZoomMode="None" />
+            </VerticalStackLayout>
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- CATEGORY BREAKDOWN (donut)                 -->
+            <!-- ═══════════════════════════════════════════ -->
+            <VerticalStackLayout Padding="16,20,16,0" Spacing="10">
+                <Label Style="{StaticResource SectionTitle}" Text="By category" />
+
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="130" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Pie chart -->
+                    <lvc:PieChart
+                        Grid.Column="0"
+                        HeightRequest="130"
+                        InitialRotation="-90"
+                        LegendPosition="Hidden"
+                        Series="{Binding CategorySeries}"
+                        WidthRequest="130" />
+
+                    <!-- Legend -->
+                    <CollectionView
+                        Grid.Column="1"
+                        ItemsSource="{Binding CategoryBreakdown}"
+                        VerticalOptions="Center">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnSpacing="8" Padding="0,4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="8" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <BoxView
+                                        Grid.Column="0"
+                                        BackgroundColor="{Binding Color}"
+                                        CornerRadius="4"
+                                        HeightRequest="8"
+                                        VerticalOptions="Center"
+                                        WidthRequest="8" />
+                                    <Label
+                                        Grid.Column="1"
+                                        FontSize="11"
+                                        Text="{Binding Name}"
+                                        TextColor="#555"
+                                        VerticalOptions="Center" />
+                                    <Label
+                                        Grid.Column="2"
+                                        FontAttributes="Bold"
+                                        FontSize="11"
+                                        Text="{Binding Percentage, StringFormat='{0}%'}"
+                                        TextColor="#1a1a2e"
+                                        VerticalOptions="Center" />
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Grid>
+            </VerticalStackLayout>
+
+            <!-- ═══════════════════════════════════════════ -->
+            <!-- RECENT TRANSACTIONS                        -->
+            <!-- ═══════════════════════════════════════════ -->
+            <VerticalStackLayout Padding="16,20,16,16" Spacing="10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Label
+                        Grid.Column="0"
+                        Style="{StaticResource SectionTitle}"
+                        Text="Recent transactions" />
+                    <Label
+                        Grid.Column="1"
+                        FontSize="12"
+                        Text="See all ›"
+                        TextColor="{StaticResource PrimaryPurple}"
+                        VerticalOptions="Center">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding GoToExpensesCommand}" />
+                        </Label.GestureRecognizers>
+                    </Label>
+                </Grid>
+                <CollectionView ItemsSource="{Binding RecentTransactions}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnSpacing="12"
+                                  Padding="0,10"
+                                  RowSpacing="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="40" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Separator line -->
+                                <BoxView Grid.Column="0"
+                                         Grid.ColumnSpan="3"
+                                         BackgroundColor="#EEEEF5"
+                                         HeightRequest="0.5"
+                                         VerticalOptions="Start" />
+
+                                <!-- Category icon -->
+                                <Border Grid.Column="0"
+                                        BackgroundColor="{Binding IconBackground}"
+                                        HeightRequest="40"
+                                        StrokeShape="RoundRectangle 10"
+                                        StrokeThickness="0"
+                                        VerticalOptions="Center"
+                                        WidthRequest="40">
+                                    <Image HeightRequest="18"
+                                           HorizontalOptions="Center"
+                                           Source="{Binding IconName}"
+                                           VerticalOptions="Center"
+                                           WidthRequest="18">
+                                        <Image.Behaviors>
+                                            <toolkit:IconTintColorBehavior TintColor="{Binding IconColor}" />
+                                        </Image.Behaviors>
+                                    </Image>
+                                </Border>
+
+                                <!-- Name + category -->
+                                <VerticalStackLayout Grid.Column="1"
+                                                     Spacing="2"
+                                                     VerticalOptions="Center">
+                                    <Label FontAttributes="Bold"
+                                           FontSize="13"
+                                           Text="{Binding Name}"
+                                           TextColor="#1a1a2e" />
+                                    <Label FontSize="11"
+                                           Text="{Binding CategoryAndTime}"
+                                           TextColor="#888" />
+                                </VerticalStackLayout>
+
+                                <!-- Amount -->
+                                <Label Grid.Column="2"
+                                       FontAttributes="Bold"
+                                       FontSize="13"
+                                       Text="{Binding AmountFormatted}"
+                                       TextColor="{Binding AmountColor}"
+                                       VerticalOptions="Center" />
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+
+            <!-- Savings alert banner (shown if over budget) -->
+            <Border
+                BackgroundColor="#FFF3CD"
+                IsVisible="{Binding IsOverBudgetWarningVisible}"
+                Margin="16,0,16,16"
+                Padding="12,10"
+                StrokeShape="RoundRectangle 10"
+                StrokeThickness="0">
+                <HorizontalStackLayout Spacing="10">
+                    <Label
+                        FontSize="16"
+                        Text="⚠️"
+                        VerticalOptions="Center" />
+                    <Label
+                        FontSize="12"
+                        Text="{Binding OverBudgetMessage}"
+                        TextColor="#856404"
+                        VerticalOptions="Center" />
+                </HorizontalStackLayout>
+            </Border>
+
+            <!-- Bottom padding for tab bar -->
+            <BoxView HeightRequest="90" Color="Transparent" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
