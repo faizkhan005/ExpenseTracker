@@ -10,7 +10,7 @@ public class CategoryIconMap
         ["fork"] = "\ue56c",
         ["health"] = "\ue548",
         ["phone"] = "\ue0cd",
-        ["bag"] = "\uf290",
+        ["bag"] = "\ue8f6",
         ["bank"] = "\ue227",
         ["dots"] = "\ue5d3",
     };

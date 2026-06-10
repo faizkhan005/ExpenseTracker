@@ -170,7 +170,7 @@ public partial class AddExpenseViewModel : ObservableObject
         else
             await _expenseService.AddExpenseAsync(expense);
 
-        await Shell.Current.GoToAsync("..");
+        await Shell.Current.GoToAsync("//Dashboard");
     }
 
     private async Task CancelAsync() => await Shell.Current.GoToAsync("//Dashboard");

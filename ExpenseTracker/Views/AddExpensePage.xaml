@@ -4,12 +4,21 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:ExpenseTracker.ViewModels"
              xmlns:models="clr-namespace:ExpenseTracker.Models"
+             xmlns:converters="clr-namespace:ExpenseTracker.Converters"
              x:DataType="vm:AddExpenseViewModel"
              Shell.NavBarIsVisible="False">
 
     <ContentPage.Resources>
         <ResourceDictionary>
             <Color x:Key="PrimaryPurple">#534AB7</Color>
+        </ResourceDictionary>
+        <ResourceDictionary>
+            <converters:TypeBgConverter     x:Key="TypeBgConverter" />
+            <converters:TypeStrokeConverter x:Key="TypeStrokeConverter" />
+            <converters:TypeTextConverter   x:Key="TypeTextConverter" />
+            <converters:CatBgConverter      x:Key="CatBgConverter" />
+            <converters:CatStrokeConverter  x:Key="CatStrokeConverter" />
+            <converters:CatTextConverter    x:Key="CatTextConverter" />
         </ResourceDictionary>
     </ContentPage.Resources>
 
@@ -199,11 +208,11 @@
                         Padding="0,10"
                         StrokeShape="RoundRectangle 10"
                         StrokeThickness="1"
-                        BackgroundColor="{Binding IsToday, Converter={StaticResource DateBgConverter}}"
-                        Stroke="{Binding IsToday, Converter={StaticResource DateStrokeConverter}}">
+                        BackgroundColor="{Binding IsToday, Converter={StaticResource TypeBgConverter}}"
+                        Stroke="{Binding IsToday, Converter={StaticResource TypeStrokeConverter}}">
                         <Label FontSize="12" FontAttributes="Bold" HorizontalOptions="Center"
                                Text="Today"
-                               TextColor="{Binding IsToday, Converter={StaticResource DateTextConverter}}" />
+                               TextColor="{Binding IsToday, Converter={StaticResource TypeTextConverter}}" />
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding SetDateCommand}" CommandParameter="today" />
                         </Border.GestureRecognizers>
@@ -213,11 +222,11 @@
                         Padding="0,10"
                         StrokeShape="RoundRectangle 10"
                         StrokeThickness="1"
-                        BackgroundColor="{Binding IsYesterday, Converter={StaticResource DateBgConverter}}"
-                        Stroke="{Binding IsYesterday, Converter={StaticResource DateStrokeConverter}}">
+                        BackgroundColor="{Binding IsYesterday, Converter={StaticResource TypeBgConverter}}"
+                        Stroke="{Binding IsYesterday, Converter={StaticResource TypeStrokeConverter}}">
                         <Label FontSize="12" FontAttributes="Bold" HorizontalOptions="Center"
                                Text="Yesterday"
-                               TextColor="{Binding IsYesterday, Converter={StaticResource DateTextConverter}}" />
+                               TextColor="{Binding IsYesterday, Converter={StaticResource TypeTextConverter}}" />
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding SetDateCommand}" CommandParameter="yesterday" />
                         </Border.GestureRecognizers>
@@ -227,11 +236,11 @@
                         Padding="0,10"
                         StrokeShape="RoundRectangle 10"
                         StrokeThickness="1"
-                        BackgroundColor="{Binding IsCustomDate, Converter={StaticResource DateBgConverter}}"
-                        Stroke="{Binding IsCustomDate, Converter={StaticResource DateStrokeConverter}}">
+                        BackgroundColor="{Binding IsCustomDate, Converter={StaticResource TypeBgConverter}}"
+                        Stroke="{Binding IsCustomDate, Converter={StaticResource TypeStrokeConverter}}">
                         <Label FontSize="12" FontAttributes="Bold" HorizontalOptions="Center"
                                Text="Pick date"
-                               TextColor="{Binding IsCustomDate, Converter={StaticResource DateTextConverter}}" />
+                               TextColor="{Binding IsCustomDate, Converter={StaticResource TypeTextConverter}}" />
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding SetDateCommand}" CommandParameter="custom" />
                         </Border.GestureRecognizers>

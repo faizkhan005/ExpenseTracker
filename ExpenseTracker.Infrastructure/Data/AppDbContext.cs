@@ -32,29 +32,6 @@ public class AppDbContext
         if (_connection is not null)
             return _connection;
 
-        Debug.WriteLine($"📍 DB Path: {_dbPath}");
-        Debug.WriteLine($"📍 DB Exists before deletion: {File.Exists(_dbPath)}");
-
-        // Delete old database if it exists to ensure fresh schema
-        if (File.Exists(_dbPath))
-        {
-            try
-            {
-                Debug.WriteLine($"🗑️  Deleting old database: {_dbPath}");
-                File.Delete(_dbPath);
-                Debug.WriteLine("✓ Old database deleted successfully");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"⚠️  Could not delete old database: {ex.Message}");
-            }
-        }
-        else
-        {
-            Debug.WriteLine("📍 DB file does not exist - creating fresh");
-        }
-
-        //var dbPath = Path.Combine(FileSystem.AppDataDirectory, DbName);
         _connection = new SQLiteAsyncConnection(_dbPath, Flags);
 
         await InitialiseTablesAsync(_connection);
@@ -67,134 +44,21 @@ public class AppDbContext
 
     private static async Task InitialiseTablesAsync(SQLiteAsyncConnection db)
     {
-        Debug.WriteLine("=== TABLE INITIALIZATION START ===");
-
         try
         {
-            // Category
-            try
-            {
-                Debug.WriteLine("⏳ Creating Category table...");
-                var result = await db.CreateTableAsync<Category>();
-                Debug.WriteLine($"✓ Category table: {result}");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"❌ Category EXCEPTION: {ex.GetType().Name} - {ex.Message}");
-                throw;
-            }
-
-            // Expense
-            try
-            {
-                Debug.WriteLine("⏳ Creating Expense table...");
-                var result = await db.CreateTableAsync<Expense>();
-                Debug.WriteLine($"✓ Expense table: {result}");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"❌ Expense EXCEPTION: {ex.GetType().Name} - {ex.Message}");
-                throw;
-            }
-
-            // LineItem - THIS IS LIKELY FAILING
-            try
-            {
-                Debug.WriteLine("⏳ Creating LineItem table...");
-                var result = await db.CreateTableAsync<LineItem>();
-                Debug.WriteLine($"✓ LineItem table: {result}");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"❌❌❌ LineItem CRITICAL EXCEPTION ❌❌❌");
-                Debug.WriteLine($"❌ Type: {ex.GetType().FullName}");
-                Debug.WriteLine($"❌ Message: {ex.Message}");
-                Debug.WriteLine($"❌ Stack: {ex.StackTrace}");
-
-                if (ex.InnerException != null)
-                {
-                    Debug.WriteLine($"❌ Inner Type: {ex.InnerException.GetType().FullName}");
-                    Debug.WriteLine($"❌ Inner Message: {ex.InnerException.Message}");
-                    Debug.WriteLine($"❌ Inner Stack: {ex.InnerException.StackTrace}");
-                }
-
-                // RETHROW to expose the actual problem
-                throw;
-            }
-
-            // RecurringExpense
-            try
-            {
-                Debug.WriteLine("⏳ Creating RecurringExpense table...");
-                var result = await db.CreateTableAsync<RecurringExpense>();
-                Debug.WriteLine($"✓ RecurringExpense table: {result}");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"❌ RecurringExpense EXCEPTION: {ex.GetType().Name} - {ex.Message}");
-                throw;
-            }
-
-            // Budget
-            try
-            {
-                Debug.WriteLine("⏳ Creating Budget table...");
-                var result = await db.CreateTableAsync<Budget>();
-                Debug.WriteLine($"✓ Budget table: {result}");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"❌ Budget EXCEPTION: {ex.GetType().Name} - {ex.Message}");
-                throw;
-            }
-
-            // SmsRule
-            try
-            {
-                Debug.WriteLine("⏳ Creating SmsRule table...");
-                var result = await db.CreateTableAsync<SmsRule>();
-                Debug.WriteLine($"✓ SmsRule table: {result}");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"❌ SmsRule EXCEPTION: {ex.GetType().Name} - {ex.Message}");
-                throw;
-            }
-
-            // SavedLocation
-            try
-            {
-                Debug.WriteLine("⏳ Creating SavedLocation table...");
-                var result = await db.CreateTableAsync<SavedLocation>();
-                Debug.WriteLine($"✓ SavedLocation table: {result}");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"❌ SavedLocation EXCEPTION: {ex.GetType().Name} - {ex.Message}");
-                throw;
-            }
-
-            Debug.WriteLine("=== TABLE INITIALIZATION SUCCESS ===");
+            await db.CreateTableAsync<Category>();
+            await db.CreateTableAsync<Expense>();
+            await db.CreateTableAsync<LineItem>();
+            await db.CreateTableAsync<RecurringExpense>();
+            await db.CreateTableAsync<Budget>();
+            await db.CreateTableAsync<SmsRule>();
+            await db.CreateTableAsync<SavedLocation>();
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"");
-            Debug.WriteLine($"╔════════════════════════════════════════════════════════╗");
-            Debug.WriteLine($"║         FATAL TABLE INITIALIZATION ERROR              ║");
-            Debug.WriteLine($"╚════════════════════════════════════════════════════════╝");
-            Debug.WriteLine($"Exception Type: {ex.GetType().FullName}");
             Debug.WriteLine($"Message: {ex.Message}");
             Debug.WriteLine($"StackTrace: {ex.StackTrace}");
 
-            if (ex.InnerException != null)
-            {
-                Debug.WriteLine($"");
-                Debug.WriteLine($"Inner Exception Type: {ex.InnerException.GetType().FullName}");
-                Debug.WriteLine($"Inner Message: {ex.InnerException.Message}");
-                Debug.WriteLine($"Inner Stack: {ex.InnerException.StackTrace}");
-            }
-
-            throw;
         }
     }
 
