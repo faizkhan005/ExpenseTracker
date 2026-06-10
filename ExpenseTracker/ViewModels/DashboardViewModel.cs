@@ -1,7 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using ExpenseTracker.Application.Interfaces;
+using ExpenseTracker.Domain.Entities;
+using ExpenseTracker.Domain.Enums;
 using ExpenseTracker.Models;
-using ExpenseTracker.Services.Interface;
 using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
@@ -13,80 +15,82 @@ namespace ExpenseTracker.ViewModels;
 
 public partial class DashboardViewModel : ObservableObject
 {
+    // Dependencies 
     private readonly IExpenseService _expenseService;
     private readonly IBudgetService _budgetService;
 
+    // Constructor 
     public DashboardViewModel(IExpenseService expenseService, IBudgetService budgetService)
     {
         _expenseService = expenseService;
         _budgetService = budgetService;
-
         GoToMonthlyCommand = new AsyncRelayCommand(GoToMonthlyAsync);
         GoToExpensesCommand = new AsyncRelayCommand(GoToExpensesAsync);
         AddExpenseCommand = new AsyncRelayCommand(AddExpenseAsync);
     }
 
-    public DashboardViewModel()
-    {
-        _expenseService = null!;
-        _budgetService = null!;
-        LoadDesignTimeData();
-
-        GoToMonthlyCommand = new AsyncRelayCommand(GoToMonthlyAsync);
-        GoToExpensesCommand = new AsyncRelayCommand(GoToExpensesAsync);
-        AddExpenseCommand = new AsyncRelayCommand(AddExpenseAsync);
-    }
-
+    // Commands 
     public ICommand GoToMonthlyCommand { get; }
     public ICommand GoToExpensesCommand { get; }
     public ICommand AddExpenseCommand { get; }
 
+    // Observable properties
+    [ObservableProperty]
+    private partial string GreetingName { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private string _greetingName = "Faizan 👋";
+    private partial bool HasNotifications { get; set; } = false;
 
     [ObservableProperty]
-    private bool _hasNotifications = true;
-
-    // Budget / totals
-    [ObservableProperty]
-    private decimal _totalSpent;
+    private partial decimal TotalSpent { get; set; }
 
     [ObservableProperty]
-    private decimal _budgetLimit = 3000m;
+    private partial decimal BudgetLimit { get; set; }
 
     [ObservableProperty]
-    private decimal _savedThisMonth;
+    private partial decimal SavedThisMonth { get; set; }
 
     [ObservableProperty]
-    private decimal _avgDailySpend;
+    private partial decimal AvgDailySpend { get; set; }
 
     [ObservableProperty]
-    private int _daysLeft;
-
-    // Change indicators
-    [ObservableProperty]
-    private double _savingsChangePercent;
+    private partial int DaysLeft { get; set; }
 
     [ObservableProperty]
-    private double _dailySpendChangePercent;
+    private partial double SavingsChangePercent { get; set; }
 
-    // Over-budget warning
     [ObservableProperty]
-    private bool _isOverBudgetWarningVisible;
+    private partial double DailySpendChangePercent { get; set; }
 
+    [ObservableProperty]
+    private partial bool IsOverBudgetWarningVisible { get; set; }
+
+    [ObservableProperty]
+    private partial bool IsLoading { get; set; }
+
+    [ObservableProperty]
+    private partial ObservableCollection<TransactionDisplayItem> RecentTransactions { get; set; } = [];
+
+    [ObservableProperty]
+    private partial ObservableCollection<CategoryLegendItem> CategoryBreakdown { get; set; } = [];
+
+    // Computed display strings
     public string TotalSpentFormatted => TotalSpent.ToString("C0");
     public string BudgetLimitFormatted => BudgetLimit.ToString("C0");
     public string SavedThisMonthFormatted => SavedThisMonth.ToString("C0");
     public string AvgDailySpendFormatted => AvgDailySpend.ToString("C0");
 
-    public double BudgetProgress => BudgetLimit == 0 ? 0 : (double)(TotalSpent / BudgetLimit);
+    public double BudgetProgress => BudgetLimit == 0
+        ? 0
+        : Math.Min(1.0, (double)(TotalSpent / BudgetLimit));
 
     public string BudgetPercentLabel =>
         $"{Math.Round(BudgetProgress * 100)}% used";
 
     public string BudgetSubtitle =>
-        $"of {BudgetLimitFormatted} budget · {DaysLeft} days left";
+        BudgetLimit > 0
+            ? $"of {BudgetLimitFormatted} budget · {DaysLeft} days left"
+            : $"{DaysLeft} days left this month";
 
     public string SavingsChangeLabel =>
         $"{(SavingsChangePercent >= 0 ? "↑" : "↓")} {Math.Abs(SavingsChangePercent):0}% vs last month";
@@ -95,141 +99,138 @@ public partial class DashboardViewModel : ObservableObject
         $"{(DailySpendChangePercent >= 0 ? "↑" : "↓")} {Math.Abs(DailySpendChangePercent):0}% vs last month";
 
     public Color SavingsChangeLabelColor =>
-        SavingsChangePercent >= 0 ? Color.FromArgb("#1D9E75") : Color.FromArgb("#E24B4A");
+       SavingsChangePercent >= 0
+           ? Color.FromArgb("#1D9E75")
+           : Color.FromArgb("#E24B4A");
 
     public Color DailySpendChangeLabelColor =>
-       DailySpendChangePercent <= 0 ? Color.FromArgb("#1D9E75") : Color.FromArgb("#E24B4A");
+        DailySpendChangePercent <= 0
+            ? Color.FromArgb("#1D9E75")
+            : Color.FromArgb("#E24B4A");
 
     public string OverBudgetMessage =>
-        $"You're on track to exceed your budget by {(TotalSpent - BudgetLimit):C0}. Tap for tips.";
+        $"You are on track to exceed your budget by {(TotalSpent - BudgetLimit):C0}. Tap for tips.";
 
-    [ObservableProperty]
-    private ObservableCollection<TransactionDisplayItem> _recentTransactions = new();
-
-    [ObservableProperty]
-    private ObservableCollection<CategoryLegendItem> _categoryBreakdown = new();
-
-    // ─── LiveCharts2 — Weekly bar chart ──────────────────────────────────────
-
+    // LiveCharts2
     public ISeries[] WeeklySeries { get; private set; } = Array.Empty<ISeries>();
+    public ISeries[] CategorySeries { get; private set; } = Array.Empty<ISeries>();
 
     public Axis[] WeeklyXAxes { get; private set; } =
- {
+    {
         new Axis
         {
-            Labels = new[] { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" },
-            LabelsPaint = new SolidColorPaint(SKColors.Gray),
-            TextSize = 10,
+            Labels          = new[] { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" },
+            LabelsPaint     = new SolidColorPaint(SKColors.Gray),
+            TextSize        = 10,
             SeparatorsPaint = null
         }
     };
 
     public Axis[] WeeklyYAxes { get; private set; } =
     {
-        new Axis
-        {
-            IsVisible = false,
-            SeparatorsPaint = null
-        }
+        new Axis { IsVisible = false, SeparatorsPaint = null }
     };
 
-
-    public ISeries[] CategorySeries { get; private set; } = Array.Empty<ISeries>();
-
+    // ─── Main data load ───────────────────────────────────────────────────────
     public async Task LoadDataAsync()
     {
+        IsLoading = true;
+
         var now = DateTime.Now;
         var start = new DateTime(now.Year, now.Month, 1);
-        var end = now;
 
-        // Totals
-        var expenses = await _expenseService.GetExpensesAsync(start, end);
-        TotalSpent = expenses.Sum(e => e.Amount);
+        // Greeting changes based on time of day
+        var hour = now.Hour;
+        GreetingName = hour < 12 ? "Good morning" :
+                       hour < 17 ? "Good afternoon" :
+                                   "Good evening";
+
+        // Current month expenses from SQLite via service
+        var expenses = await _expenseService.GetExpensesAsync(start, now);
+
+        TotalSpent = expenses
+            .Where(e => e.Type == TransactionType.Expense)
+            .Sum(e => e.Amount);
+
+        // Budget from DB — 0 if not set yet
         BudgetLimit = await _budgetService.GetMonthlyBudgetAsync(now.Year, now.Month);
         DaysLeft = DateTime.DaysInMonth(now.Year, now.Month) - now.Day;
 
-        // Savings
-        var income = await _expenseService.GetIncomeAsync(now.Year, now.Month);
+        // Savings = income logged this month minus spending
+        var income = expenses
+            .Where(e => e.Type == TransactionType.Income)
+            .Sum(e => e.Amount);
         SavedThisMonth = income - TotalSpent;
 
-        // Avg daily spend
-        int daysElapsed = now.Day;
-        AvgDailySpend = daysElapsed > 0 ? TotalSpent / daysElapsed : 0;
+        // Average daily spend across days elapsed so far
+        int daysElapsed = Math.Max(1, now.Day);
+        AvgDailySpend = TotalSpent / daysElapsed;
 
-        // Change vs last month
+        // Compare against last month for change indicators
         var lastMonth = now.AddMonths(-1);
         var lastMonthStart = new DateTime(lastMonth.Year, lastMonth.Month, 1);
-        var lastMonthEnd = lastMonthStart.AddMonths(1).AddDays(-1);
+        var lastMonthEnd = lastMonthStart.AddMonths(1).AddSeconds(-1);
         var lastExpenses = await _expenseService.GetExpensesAsync(lastMonthStart, lastMonthEnd);
 
-        var lastSpent = lastExpenses.Sum(e => e.Amount);
-        var lastIncome = await _expenseService.GetIncomeAsync(lastMonth.Year, lastMonth.Month);
+        var lastSpent = lastExpenses.Where(e => e.Type == TransactionType.Expense).Sum(e => e.Amount);
+        var lastIncome = lastExpenses.Where(e => e.Type == TransactionType.Income).Sum(e => e.Amount);
         var lastSaved = lastIncome - lastSpent;
 
-        SavingsChangePercent = lastSaved != 0 ? (double)((SavedThisMonth - lastSaved) / lastSaved * 100) : 0;
-        var lastAvgDaily = lastExpenses.Count > 0 ? lastSpent / DateTime.DaysInMonth(lastMonth.Year, lastMonth.Month) : 0;
-        DailySpendChangePercent = lastAvgDaily != 0 ? (double)((AvgDailySpend - lastAvgDaily) / lastAvgDaily * 100) : 0;
+        SavingsChangePercent = lastSaved != 0
+            ? (double)((SavedThisMonth - lastSaved) / Math.Abs(lastSaved) * 100)
+            : 0;
 
-        // Over-budget warning
-        IsOverBudgetWarningVisible = TotalSpent > BudgetLimit;
+        var lastDaysInMonth = (decimal)DateTime.DaysInMonth(lastMonth.Year, lastMonth.Month);
+        var lastAvgDaily = lastSpent / Math.Max(1, lastDaysInMonth);
+        DailySpendChangePercent = lastAvgDaily != 0
+            ? (double)((AvgDailySpend - lastAvgDaily) / lastAvgDaily * 100)
+            : 0;
 
-        // Recent transactions (last 5)
-        var recent = expenses
-            .OrderByDescending(e => e.Date)
-            .Take(5)
-            .Select(e => new TransactionDisplayItem(e))
-            .ToList();
+        // Show warning banner only when actively over budget
+        IsOverBudgetWarningVisible = BudgetLimit > 0 && TotalSpent > BudgetLimit;
 
-        RecentTransactions = new ObservableCollection<TransactionDisplayItem>(recent);
+        // 5 most recent transactions for the list
+        RecentTransactions = new ObservableCollection<TransactionDisplayItem>(
+            expenses
+                .OrderByDescending(e => e.Date)
+                .Take(5)
+                .Select(e => new TransactionDisplayItem(e)));
 
-        // Weekly bar chart
+        // Build charts from real data
         BuildWeeklyChart(expenses, now);
-
-        // Category breakdown
         BuildCategoryChart(expenses);
 
-        // Refresh computed strings
-        OnPropertyChanged(nameof(TotalSpentFormatted));
-        OnPropertyChanged(nameof(BudgetLimitFormatted));
-        OnPropertyChanged(nameof(SavedThisMonthFormatted));
-        OnPropertyChanged(nameof(AvgDailySpendFormatted));
-        OnPropertyChanged(nameof(BudgetProgress));
-        OnPropertyChanged(nameof(BudgetPercentLabel));
-        OnPropertyChanged(nameof(BudgetSubtitle));
-        OnPropertyChanged(nameof(SavingsChangeLabel));
-        OnPropertyChanged(nameof(DailySpendChangeLabel));
-        OnPropertyChanged(nameof(SavingsChangeLabelColor));
-        OnPropertyChanged(nameof(DailySpendChangeLabelColor));
-        OnPropertyChanged(nameof(OverBudgetMessage));
+        // Refresh all computed string bindings
+        NotifyComputedProperties();
+
+        IsLoading = false;
     }
 
-    private void BuildWeeklyChart(IEnumerable<Expense> expenses, DateTime now)
+    // Chart builders
+    private void BuildWeeklyChart(List<Expense> expenses, DateTime now)
     {
-        // Build Mon–Sun of the current week
-        var startOfWeek = now.AddDays(-(int)now.DayOfWeek + (int)DayOfWeek.Monday);
+        int diff = ((int)now.DayOfWeek - (int)DayOfWeek.Monday + 7) % 7;
+        var startOfWeek = now.Date.AddDays(-diff);
+
         var dailyTotals = Enumerable.Range(0, 7)
             .Select(i =>
             {
                 var day = startOfWeek.AddDays(i);
-                var total = expenses
-                    .Where(e => e.Date.Date == day.Date)
+                return (double)expenses
+                    .Where(e => e.Date.Date == day && e.Type == TransactionType.Expense)
                     .Sum(e => e.Amount);
-                return (double)total;
             })
             .ToArray();
-
-        // Highest day gets accent color, rest get light purple
-        var maxIndex = Array.IndexOf(dailyTotals, dailyTotals.Max());
 
         WeeklySeries = new ISeries[]
         {
             new ColumnSeries<double>
             {
-                Values         = dailyTotals,
-                Fill           = new SolidColorPaint(SKColor.Parse("#CECBF6")),
-                MaxBarWidth    = 24,
-                Rx             = 4,
-                Ry             = 4,
+                Values          = dailyTotals,
+                Fill            = new SolidColorPaint(SKColor.Parse("#CECBF6")),
+                MaxBarWidth     = 24,
+                Rx              = 4,
+                Ry              = 4,
                 DataLabelsPaint = null
             }
         };
@@ -237,7 +238,7 @@ public partial class DashboardViewModel : ObservableObject
         OnPropertyChanged(nameof(WeeklySeries));
     }
 
-    private void BuildCategoryChart(IEnumerable<Expense> expenses)
+    private void BuildCategoryChart(List<Expense> expenses)
     {
         var categoryColors = new Dictionary<string, string>
         {
@@ -252,6 +253,7 @@ public partial class DashboardViewModel : ObservableObject
         };
 
         var grouped = expenses
+            .Where(e => e.Type == TransactionType.Expense)
             .GroupBy(e => e.Category?.Name ?? "Other")
             .Select(g => new
             {
@@ -259,87 +261,56 @@ public partial class DashboardViewModel : ObservableObject
                 Total = g.Sum(e => e.Amount),
                 Color = categoryColors.GetValueOrDefault(g.Key, "#B4B2A9")
             })
+            .Where(g => g.Total > 0)
             .OrderByDescending(g => g.Total)
             .ToList();
 
         var grandTotal = grouped.Sum(g => g.Total);
 
-        CategorySeries = grouped.Select(g => (ISeries)new PieSeries<double>
-        {
-            Values = new[] { (double)g.Total },
-            Fill = new SolidColorPaint(SKColor.Parse(g.Color)),
-            OuterRadiusOffset = 0,
-            MaxRadialColumnWidth = 18,
-            Name = g.Name
-        }).ToArray();
+        CategorySeries = grouped
+            .Select(g => (ISeries)new PieSeries<double>
+            {
+                Values = new[] { (double)g.Total },
+                Fill = new SolidColorPaint(SKColor.Parse(g.Color)),
+                MaxRadialColumnWidth = 18,
+                Name = g.Name
+            })
+            .ToArray();
 
         CategoryBreakdown = new ObservableCollection<CategoryLegendItem>(
             grouped.Select(g => new CategoryLegendItem
             {
                 Name = g.Name,
-                Percentage = grandTotal > 0 ? (int)Math.Round((double)g.Total / (double)grandTotal * 100) : 0,
+                Percentage = grandTotal > 0
+                    ? (int)Math.Round((double)g.Total / (double)grandTotal * 100)
+                    : 0,
                 Color = Color.FromArgb(g.Color)
             }));
 
         OnPropertyChanged(nameof(CategorySeries));
     }
 
-    private async Task GoToMonthlyAsync()
-        => await Shell.Current.GoToAsync("//InsightsPage");
+    // Helpers
 
-    private async Task GoToExpensesAsync()
-        => await Shell.Current.GoToAsync("//ExpensesPage");
-
-    private async Task AddExpenseAsync()
-        => await Shell.Current.GoToAsync("AddExpensePage");
-
-    private void LoadDesignTimeData()
+    private void NotifyComputedProperties()
     {
-        GreetingName = "Faizan 👋";
-        TotalSpent = 1842m;
-        BudgetLimit = 3000m;
-        SavedThisMonth = 624m;
-        AvgDailySpend = 102m;
-        DaysLeft = 18;
-        SavingsChangePercent = 12;
-        DailySpendChangePercent = 8;
-        HasNotifications = true;
-        IsOverBudgetWarningVisible = false;
-
-        RecentTransactions = new ObservableCollection<TransactionDisplayItem>
-        {
-            new() { Name = "Walmart Grocery",    CategoryAndTime = "Food · Today 10:24am",  AmountFormatted = "-$84.50",  AmountColor = Color.FromArgb("#E24B4A"), IconBackground = Color.FromArgb("#EAF3DE"), IconColor = Color.FromArgb("#3B6D11"), IconName = "icon_cart.png" },
-            new() { Name = "Shell Gas Station",  CategoryAndTime = "Transport · Yesterday",  AmountFormatted = "-$52.00",  AmountColor = Color.FromArgb("#E24B4A"), IconBackground = Color.FromArgb("#E6F1FB"), IconColor = Color.FromArgb("#185FA5"), IconName = "icon_car.png"  },
-            new() { Name = "Salary deposit",     CategoryAndTime = "Income · May 25",        AmountFormatted = "+$3,200", AmountColor = Color.FromArgb("#1D9E75"), IconBackground = Color.FromArgb("#E1F5EE"), IconColor = Color.FromArgb("#0F6E56"), IconName = "icon_bank.png" },
-        };
-
-        CategoryBreakdown = new ObservableCollection<CategoryLegendItem>
-        {
-            new() { Name = "Housing",       Percentage = 40, Color = Color.FromArgb("#534AB7") },
-            new() { Name = "Food",          Percentage = 16, Color = Color.FromArgb("#1D9E75") },
-            new() { Name = "Transport",     Percentage = 11, Color = Color.FromArgb("#EF9F27") },
-            new() { Name = "Dining",        Percentage =  8, Color = Color.FromArgb("#E24B4A") },
-            new() { Name = "Other",         Percentage = 25, Color = Color.FromArgb("#CECBF6") },
-        };
-
-        WeeklySeries = new ISeries[]
-       {
-            new ColumnSeries<double>
-            {
-                Values      = new double[] { 30, 95, 45, 80, 110, 140, 20 },
-                Fill        = new SolidColorPaint(SKColor.Parse("#CECBF6")),
-                MaxBarWidth = 24,
-                Rx = 4, Ry = 4
-            }
-       };
-
-        CategorySeries = new ISeries[]
-        {
-            new PieSeries<double> { Values = new[] { 40.0 }, Fill = new SolidColorPaint(SKColor.Parse("#534AB7")), MaxRadialColumnWidth = 18 },
-            new PieSeries<double> { Values = new[] { 16.0 }, Fill = new SolidColorPaint(SKColor.Parse("#1D9E75")), MaxRadialColumnWidth = 18 },
-            new PieSeries<double> { Values = new[] { 11.0 }, Fill = new SolidColorPaint(SKColor.Parse("#EF9F27")), MaxRadialColumnWidth = 18 },
-            new PieSeries<double> { Values = new[] { 8.0  }, Fill = new SolidColorPaint(SKColor.Parse("#E24B4A")), MaxRadialColumnWidth = 18 },
-            new PieSeries<double> { Values = new[] { 25.0 }, Fill = new SolidColorPaint(SKColor.Parse("#CECBF6")), MaxRadialColumnWidth = 18 },
-        };
+        OnPropertyChanged(nameof(TotalSpentFormatted));
+        OnPropertyChanged(nameof(BudgetLimitFormatted));
+        OnPropertyChanged(nameof(SavedThisMonthFormatted));
+        OnPropertyChanged(nameof(AvgDailySpendFormatted));
+        OnPropertyChanged(nameof(BudgetProgress));
+        OnPropertyChanged(nameof(BudgetPercentLabel));
+        OnPropertyChanged(nameof(BudgetSubtitle));
+        OnPropertyChanged(nameof(SavingsChangeLabel));
+        OnPropertyChanged(nameof(DailySpendChangeLabel));
+        OnPropertyChanged(nameof(SavingsChangeLabelColor));
+        OnPropertyChanged(nameof(DailySpendChangeLabelColor));
+        OnPropertyChanged(nameof(OverBudgetMessage));
     }
+
+    // Navigation 
+    private Task GoToMonthlyAsync() => Shell.Current.GoToAsync("//InsightsPage");
+    private Task GoToExpensesAsync() => Shell.Current.GoToAsync("//ExpensesPage");
+    private Task AddExpenseAsync() => Shell.Current.GoToAsync("AddExpensePage");
+
 }

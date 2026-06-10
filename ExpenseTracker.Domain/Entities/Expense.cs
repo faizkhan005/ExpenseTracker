@@ -41,5 +41,5 @@ public class Expense : BaseEntity
     [Ignore]
     public Category? Category { get; set; }
     [Ignore]
-    public List<LineItem> LineItems { get; set; } = new();
+    public List<LineItem> LineItems { get; set; } = [];
 }

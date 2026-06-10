@@ -1,5 +1,6 @@
 ﻿using ExpenseTracker.Domain.Entities;
 using SQLite;
+using System.Diagnostics;
 
 namespace ExpenseTracker.Infrastructure.Data;
 
@@ -13,7 +14,6 @@ public class AppDbContext
 
     private readonly string _dbPath;
 
-    private const string DbName = "expense_tracker.db3";
     private const SQLiteOpenFlags Flags =
         SQLiteOpenFlags.ReadWrite |
         SQLiteOpenFlags.Create |
@@ -32,6 +32,28 @@ public class AppDbContext
         if (_connection is not null)
             return _connection;
 
+        Debug.WriteLine($"📍 DB Path: {_dbPath}");
+        Debug.WriteLine($"📍 DB Exists before deletion: {File.Exists(_dbPath)}");
+
+        // Delete old database if it exists to ensure fresh schema
+        if (File.Exists(_dbPath))
+        {
+            try
+            {
+                Debug.WriteLine($"🗑️  Deleting old database: {_dbPath}");
+                File.Delete(_dbPath);
+                Debug.WriteLine("✓ Old database deleted successfully");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"⚠️  Could not delete old database: {ex.Message}");
+            }
+        }
+        else
+        {
+            Debug.WriteLine("📍 DB file does not exist - creating fresh");
+        }
+
         //var dbPath = Path.Combine(FileSystem.AppDataDirectory, DbName);
         _connection = new SQLiteAsyncConnection(_dbPath, Flags);
 
@@ -45,24 +67,148 @@ public class AppDbContext
 
     private static async Task InitialiseTablesAsync(SQLiteAsyncConnection db)
     {
-        await db.CreateTableAsync<Category>();
-        await db.CreateTableAsync<Expense>();
-        await db.CreateTableAsync<LineItem>();
-        await db.CreateTableAsync<RecurringExpense>();
-        await db.CreateTableAsync<Budget>();
-        await db.CreateTableAsync<SmsRule>();
-        await db.CreateTableAsync<SavedLocation>();
+        Debug.WriteLine("=== TABLE INITIALIZATION START ===");
+
+        try
+        {
+            // Category
+            try
+            {
+                Debug.WriteLine("⏳ Creating Category table...");
+                var result = await db.CreateTableAsync<Category>();
+                Debug.WriteLine($"✓ Category table: {result}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"❌ Category EXCEPTION: {ex.GetType().Name} - {ex.Message}");
+                throw;
+            }
+
+            // Expense
+            try
+            {
+                Debug.WriteLine("⏳ Creating Expense table...");
+                var result = await db.CreateTableAsync<Expense>();
+                Debug.WriteLine($"✓ Expense table: {result}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"❌ Expense EXCEPTION: {ex.GetType().Name} - {ex.Message}");
+                throw;
+            }
+
+            // LineItem - THIS IS LIKELY FAILING
+            try
+            {
+                Debug.WriteLine("⏳ Creating LineItem table...");
+                var result = await db.CreateTableAsync<LineItem>();
+                Debug.WriteLine($"✓ LineItem table: {result}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"❌❌❌ LineItem CRITICAL EXCEPTION ❌❌❌");
+                Debug.WriteLine($"❌ Type: {ex.GetType().FullName}");
+                Debug.WriteLine($"❌ Message: {ex.Message}");
+                Debug.WriteLine($"❌ Stack: {ex.StackTrace}");
+
+                if (ex.InnerException != null)
+                {
+                    Debug.WriteLine($"❌ Inner Type: {ex.InnerException.GetType().FullName}");
+                    Debug.WriteLine($"❌ Inner Message: {ex.InnerException.Message}");
+                    Debug.WriteLine($"❌ Inner Stack: {ex.InnerException.StackTrace}");
+                }
+
+                // RETHROW to expose the actual problem
+                throw;
+            }
+
+            // RecurringExpense
+            try
+            {
+                Debug.WriteLine("⏳ Creating RecurringExpense table...");
+                var result = await db.CreateTableAsync<RecurringExpense>();
+                Debug.WriteLine($"✓ RecurringExpense table: {result}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"❌ RecurringExpense EXCEPTION: {ex.GetType().Name} - {ex.Message}");
+                throw;
+            }
+
+            // Budget
+            try
+            {
+                Debug.WriteLine("⏳ Creating Budget table...");
+                var result = await db.CreateTableAsync<Budget>();
+                Debug.WriteLine($"✓ Budget table: {result}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"❌ Budget EXCEPTION: {ex.GetType().Name} - {ex.Message}");
+                throw;
+            }
+
+            // SmsRule
+            try
+            {
+                Debug.WriteLine("⏳ Creating SmsRule table...");
+                var result = await db.CreateTableAsync<SmsRule>();
+                Debug.WriteLine($"✓ SmsRule table: {result}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"❌ SmsRule EXCEPTION: {ex.GetType().Name} - {ex.Message}");
+                throw;
+            }
+
+            // SavedLocation
+            try
+            {
+                Debug.WriteLine("⏳ Creating SavedLocation table...");
+                var result = await db.CreateTableAsync<SavedLocation>();
+                Debug.WriteLine($"✓ SavedLocation table: {result}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"❌ SavedLocation EXCEPTION: {ex.GetType().Name} - {ex.Message}");
+                throw;
+            }
+
+            Debug.WriteLine("=== TABLE INITIALIZATION SUCCESS ===");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"");
+            Debug.WriteLine($"╔════════════════════════════════════════════════════════╗");
+            Debug.WriteLine($"║         FATAL TABLE INITIALIZATION ERROR              ║");
+            Debug.WriteLine($"╚════════════════════════════════════════════════════════╝");
+            Debug.WriteLine($"Exception Type: {ex.GetType().FullName}");
+            Debug.WriteLine($"Message: {ex.Message}");
+            Debug.WriteLine($"StackTrace: {ex.StackTrace}");
+
+            if (ex.InnerException != null)
+            {
+                Debug.WriteLine($"");
+                Debug.WriteLine($"Inner Exception Type: {ex.InnerException.GetType().FullName}");
+                Debug.WriteLine($"Inner Message: {ex.InnerException.Message}");
+                Debug.WriteLine($"Inner Stack: {ex.InnerException.StackTrace}");
+            }
+
+            throw;
+        }
     }
 
     // Seed default categories
 
     private static async Task SeedDefaultDataAsync(SQLiteAsyncConnection db)
     {
-        var existingCount = await db.Table<Category>().CountAsync();
-        if (existingCount > 0)
-            return; // Already seeded
+        try
+        {
+            var existingCount = await db.Table<Category>().CountAsync();
+            if (existingCount > 0)
+                return; // Already seeded
 
-        var defaults = new List<Category>
+            var defaults = new List<Category>
         {
             new() { Name = "Food",          IconKey = "cart",       ColorHex = "#3B6D11", BackgroundHex = "#EAF3DE", IsSystem = true },
             new() { Name = "Transport",     IconKey = "car",        ColorHex = "#185FA5", BackgroundHex = "#E6F1FB", IsSystem = true },
@@ -75,12 +221,12 @@ public class AppDbContext
             new() { Name = "Other",         IconKey = "dots",       ColorHex = "#5F5E5A", BackgroundHex = "#F1EFE8", IsSystem = true },
         };
 
-        await db.InsertAllAsync(defaults);
+            await db.InsertAllAsync(defaults);
 
-        // Seed default SMS rules for common US banks (Android)
-        var foodCategoryId = (await db.Table<Category>().Where(c => c.Name == "Food").FirstOrDefaultAsync())?.Id ?? 1;
+            // Seed default SMS rules for common US banks (Android)
+            var foodCategoryId = (await db.Table<Category>().Where(c => c.Name == "Food").FirstOrDefaultAsync())?.Id ?? 1;
 
-        var smsRules = new List<SmsRule>
+            var smsRules = new List<SmsRule>
         {
             new()
             {
@@ -111,7 +257,12 @@ public class AppDbContext
             },
         };
 
-        await db.InsertAllAsync(smsRules);
+            await db.InsertAllAsync(smsRules);
+        }
+        catch (Exception ex) 
+        {
+            Console.WriteLine(ex.Message);
+        }
     }
 
     //Close

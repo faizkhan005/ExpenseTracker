@@ -3,7 +3,6 @@ using ExpenseTracker.Application.Interfaces;
 using ExpenseTracker.Application.Services;
 using ExpenseTracker.Infrastructure.Data;
 using ExpenseTracker.Infrastructure.Data.Repositories;
-using ExpenseTracker.Services;
 using ExpenseTracker.ViewModels;
 using ExpenseTracker.Views;
 using LiveChartsCore;
@@ -28,6 +27,7 @@ namespace ExpenseTracker
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+                    fonts.AddFont("MaterialIcons-Regular.ttf", "MaterialIcons");
                 });
 
             LiveCharts.Configure(config => config.AddSkiaSharp());
@@ -46,14 +46,12 @@ namespace ExpenseTracker
             builder.Services.AddSingleton<ISavedLocationRepository, SavedLocationRepository>();
 
             //Application — Services
-            builder.Services.AddSingleton<Application.Interfaces.IExpenseService, ExpenseService>();
-            builder.Services.AddSingleton<Application.Interfaces.IBudgetService, BudgetService>();
+            builder.Services.AddSingleton<IExpenseService, ExpenseService>();
+            builder.Services.AddSingleton<IBudgetService, BudgetService>();
             builder.Services.AddSingleton<IRecurringExpenseService, RecurringExpenseService>();
             builder.Services.AddSingleton<ICategoryService, CategoryService>();
             builder.Services.AddSingleton<IIntelligenceService, IntelligenceService>();
 
-            builder.Services.AddSingleton<Services.Interface.IExpenseService, ExpenseServiceStub>();
-            builder.Services.AddSingleton<Services.Interface.IBudgetService, BudgetServiceStub>();
             builder.Services.AddTransient<DashboardViewModel>();
             builder.Services.AddTransient<Dashboard>();
 

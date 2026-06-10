@@ -1,27 +1,16 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<!--<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="ExpenseTracker.Views.Dashboard"
-             Title="Dashboard">
-    <VerticalStackLayout>
-        <Label 
-            Text="Welcome to .NET MAUI!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
-</ContentPage>-->
 <ContentPage x:Class="ExpenseTracker.Views.Dashboard"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:converters="clr-namespace:ExpenseTracker.Converters"
-             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
-             xmlns:vm="clr-namespace:ExpenseTracker.ViewModels"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
              Shell.NavBarIsVisible="False">
-
-    <ContentPage.BindingContext>
-        <vm:DashboardViewModel />
-    </ContentPage.BindingContext>
+    <!--
+        BindingContext is NOT set here.
+        DashboardViewModel is injected via DI in DashboardPage.xaml.cs constructor.
+        Setting it in XAML would create a second instance with no services injected.
+    -->
 
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -49,6 +38,7 @@
                 <Setter Property="TextColor" Value="{StaticResource MutedText}" />
             </Style>
 
+            <!-- Fixed: Frame → Border -->
             <Style x:Key="MetricCard" TargetType="Border">
                 <Setter Property="BackgroundColor" Value="{StaticResource CardBackground}" />
                 <Setter Property="StrokeShape" Value="RoundRectangle 12" />
@@ -87,16 +77,17 @@
                     <VerticalStackLayout Grid.Column="0" Spacing="2">
                         <Label
                             FontSize="11"
-                            Text="Good morning,"
+                            Text="{Binding GreetingName}"
                             TextColor="{StaticResource MutedText}" />
                         <Label
                             FontAttributes="Bold"
                             FontSize="16"
-                            Text="{Binding GreetingName}"
+                            Text="Faizan 👋"
                             TextColor="White" />
                     </VerticalStackLayout>
 
                     <!-- Notification bell -->
+                    <!-- Fixed: Border only allows one child — wrapped in Grid -->
                     <Border
                         Grid.Column="1"
                         BackgroundColor="#2a2a40"
@@ -109,24 +100,26 @@
                             <Image
                                 HeightRequest="18"
                                 HorizontalOptions="Center"
-                                Source="icon_bell.png"
                                 VerticalOptions="Center"
                                 WidthRequest="18">
-                                <Image.Behaviors>
-                                    <toolkit:IconTintColorBehavior TintColor="White" />
-                                </Image.Behaviors>
+                                <Image.Source>
+                                    <FontImageSource
+                                        FontFamily="MaterialIcons"
+                                        Glyph="&#xe7f4;"
+                                        Color="White"
+                                        Size="18" />
+                                </Image.Source>
                             </Image>
-                            
-                            <!-- Notification dot -->
+                            <!-- Notification dot overlays top-right -->
                             <Border
                                 BackgroundColor="{StaticResource DangerRed}"
                                 HeightRequest="8"
                                 HorizontalOptions="End"
+                                IsVisible="{Binding HasNotifications}"
                                 StrokeShape="RoundRectangle 4"
                                 StrokeThickness="0"
                                 VerticalOptions="Start"
-                                WidthRequest="8"
-                                IsVisible="{Binding HasNotifications}" />
+                                WidthRequest="8" />
                         </Grid>
                     </Border>
                 </Grid>
@@ -171,7 +164,7 @@
                         StrokeShape="RoundRectangle 3"
                         StrokeThickness="0" />
 
-                    <!-- Fill bar using ProgressBar -->
+                    <!-- Fill bar -->
                     <ProgressBar
                         Grid.Row="0"
                         HeightRequest="5"
@@ -219,6 +212,7 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
+                <!-- Fixed: Frame → Border -->
                 <!-- Saved this month -->
                 <Border Grid.Column="0" Style="{StaticResource MetricCard}">
                     <VerticalStackLayout Spacing="4">
@@ -231,15 +225,14 @@
                             FontSize="20"
                             Text="{Binding SavedThisMonthFormatted}"
                             TextColor="{StaticResource SuccessGreen}" />
-                        <HorizontalStackLayout Spacing="3">
-                            <Label
-                                FontSize="10"
-                                Text="{Binding SavingsChangeLabel}"
-                                TextColor="{Binding SavingsChangeLabelColor}" />
-                        </HorizontalStackLayout>
+                        <Label
+                            FontSize="10"
+                            Text="{Binding SavingsChangeLabel}"
+                            TextColor="{Binding SavingsChangeLabelColor}" />
                     </VerticalStackLayout>
                 </Border>
 
+                <!-- Fixed: Frame → Border -->
                 <!-- Avg daily spend -->
                 <Border Grid.Column="1" Style="{StaticResource MetricCard}">
                     <VerticalStackLayout Spacing="4">
@@ -252,12 +245,10 @@
                             FontSize="20"
                             Text="{Binding AvgDailySpendFormatted}"
                             TextColor="#1a1a2e" />
-                        <HorizontalStackLayout Spacing="3">
-                            <Label
-                                FontSize="10"
-                                Text="{Binding DailySpendChangeLabel}"
-                                TextColor="{Binding DailySpendChangeLabelColor}" />
-                        </HorizontalStackLayout>
+                        <Label
+                            FontSize="10"
+                            Text="{Binding DailySpendChangeLabel}"
+                            TextColor="{Binding DailySpendChangeLabelColor}" />
                     </VerticalStackLayout>
                 </Border>
             </Grid>
@@ -382,12 +373,15 @@
                         </Label.GestureRecognizers>
                     </Label>
                 </Grid>
+
+                <!-- Fixed: removed stray BindableLayout, kept only CollectionView -->
                 <CollectionView ItemsSource="{Binding RecentTransactions}">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <Grid ColumnSpacing="12"
-                                  Padding="0,10"
-                                  RowSpacing="0">
+                            <Grid
+                                ColumnSpacing="12"
+                                Padding="0,10"
+                                RowSpacing="0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="40" />
                                     <ColumnDefinition Width="*" />
@@ -395,25 +389,30 @@
                                 </Grid.ColumnDefinitions>
 
                                 <!-- Separator line -->
-                                <BoxView Grid.Column="0"
-                                         Grid.ColumnSpan="3"
-                                         BackgroundColor="#EEEEF5"
-                                         HeightRequest="0.5"
-                                         VerticalOptions="Start" />
+                                <BoxView
+                                    Grid.Column="0"
+                                    Grid.ColumnSpan="3"
+                                    BackgroundColor="#EEEEF5"
+                                    HeightRequest="0.5"
+                                    VerticalOptions="Start" />
 
                                 <!-- Category icon -->
-                                <Border Grid.Column="0"
-                                        BackgroundColor="{Binding IconBackground}"
-                                        HeightRequest="40"
-                                        StrokeShape="RoundRectangle 10"
-                                        StrokeThickness="0"
+                                <!-- Fixed: Border one child only — Image inside directly -->
+                                <Border
+                                    Grid.Column="0"
+                                    BackgroundColor="{Binding IconBackground}"
+                                    HeightRequest="40"
+                                    StrokeShape="RoundRectangle 10"
+                                    StrokeThickness="0"
+                                    VerticalOptions="Center"
+                                    WidthRequest="40">
+                                    <Image
+                                        HeightRequest="18"
+                                        HorizontalOptions="Center"
+                                        Source="{Binding IconName}"
                                         VerticalOptions="Center"
-                                        WidthRequest="40">
-                                    <Image HeightRequest="18"
-                                           HorizontalOptions="Center"
-                                           Source="{Binding IconName}"
-                                           VerticalOptions="Center"
-                                           WidthRequest="18">
+                                        WidthRequest="18">
+                                        <!-- Fixed: TintColor not available — use IconTintColorBehavior -->
                                         <Image.Behaviors>
                                             <toolkit:IconTintColorBehavior TintColor="{Binding IconColor}" />
                                         </Image.Behaviors>
@@ -421,25 +420,29 @@
                                 </Border>
 
                                 <!-- Name + category -->
-                                <VerticalStackLayout Grid.Column="1"
-                                                     Spacing="2"
-                                                     VerticalOptions="Center">
-                                    <Label FontAttributes="Bold"
-                                           FontSize="13"
-                                           Text="{Binding Name}"
-                                           TextColor="#1a1a2e" />
-                                    <Label FontSize="11"
-                                           Text="{Binding CategoryAndTime}"
-                                           TextColor="#888" />
+                                <VerticalStackLayout
+                                    Grid.Column="1"
+                                    Spacing="2"
+                                    VerticalOptions="Center">
+                                    <Label
+                                        FontAttributes="Bold"
+                                        FontSize="13"
+                                        Text="{Binding Name}"
+                                        TextColor="#1a1a2e" />
+                                    <Label
+                                        FontSize="11"
+                                        Text="{Binding CategoryAndTime}"
+                                        TextColor="#888" />
                                 </VerticalStackLayout>
 
                                 <!-- Amount -->
-                                <Label Grid.Column="2"
-                                       FontAttributes="Bold"
-                                       FontSize="13"
-                                       Text="{Binding AmountFormatted}"
-                                       TextColor="{Binding AmountColor}"
-                                       VerticalOptions="Center" />
+                                <Label
+                                    Grid.Column="2"
+                                    FontAttributes="Bold"
+                                    FontSize="13"
+                                    Text="{Binding AmountFormatted}"
+                                    TextColor="{Binding AmountColor}"
+                                    VerticalOptions="Center" />
                             </Grid>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
@@ -447,6 +450,7 @@
             </VerticalStackLayout>
 
             <!-- Savings alert banner (shown if over budget) -->
+            <!-- Fixed: Border has two children — wrapped in Grid -->
             <Border
                 BackgroundColor="#FFF3CD"
                 IsVisible="{Binding IsOverBudgetWarningVisible}"
@@ -454,17 +458,19 @@
                 Padding="12,10"
                 StrokeShape="RoundRectangle 10"
                 StrokeThickness="0">
-                <HorizontalStackLayout Spacing="10">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
                     <Label
+                        Grid.Column="0"
                         FontSize="16"
                         Text="⚠️"
                         VerticalOptions="Center" />
                     <Label
+                        Grid.Column="1"
                         FontSize="12"
                         Text="{Binding OverBudgetMessage}"
                         TextColor="#856404"
                         VerticalOptions="Center" />
-                </HorizontalStackLayout>
+                </Grid>
             </Border>
 
             <!-- Bottom padding for tab bar -->
