@@ -38,46 +38,46 @@ public partial class AddExpenseViewModel : ObservableObject
     public partial int EditingExpenseId { get; set; }
 
     [ObservableProperty]
-    private partial string AmountText { get; set; } = string.Empty;
+    public partial string AmountText { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private partial string Description { get; set; } = string.Empty;
+    public partial string Description { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private partial string Notes { get; set; } = string.Empty;
+    public partial string Notes { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private partial bool IsExpense { get; set; } = true;
+    public partial bool IsExpense { get; set; } = true;
 
     [ObservableProperty]
-    private partial bool IsIncome { get; set; } = false;
+    public partial bool IsIncome { get; set; } = false;
 
     [ObservableProperty]
-    private partial bool IsToday { get; set; } = true;
+    public partial bool IsToday { get; set; } = true;
 
     [ObservableProperty]
-    private partial bool IsYesterday { get; set; } = false;
+    public partial bool IsYesterday { get; set; } = false;
 
     [ObservableProperty]
-    private partial bool IsCustomDate { get; set; } = false;
+    public partial bool IsCustomDate { get; set; } = false;
 
     [ObservableProperty]
-    private partial bool IsRecurring { get; set; } = false;
+    public partial bool IsRecurring { get; set; } = false;
 
     [ObservableProperty]
-    private partial bool HasReceiptImage { get; set; } = false;
+    public partial bool HasReceiptImage { get; set; } = false;
 
     [ObservableProperty]
-    private partial string SelectedFrequency { get; set; } = "Monthly";
+    public partial string SelectedFrequency { get; set; } = "Monthly";
 
     [ObservableProperty]
-    private partial DateTime SelectedDate { get; set; } = DateTime.Today;
+    public partial DateTime SelectedDate { get; set; } = DateTime.Today;
 
     [ObservableProperty]
-    private partial List<ImageSource> ReceiptImageSource { get; set; } = [];
+    public partial List<ImageSource> ReceiptImageSource { get; set; } = [];
 
     [ObservableProperty]
-    private partial ObservableCollection<CategorySelectItem> Categories { get; set; } = [];
+    public partial ObservableCollection<CategorySelectItem> Categories { get; set; } = [];
     public List<string> FrequencyOptions { get; } = ["Daily", "Weekly", "Monthly", "Yearly"];
 
     public string PageTitle => EditingExpenseId > 0 ? "Edit expense" : "Add expense";
@@ -173,7 +173,7 @@ public partial class AddExpenseViewModel : ObservableObject
         await Shell.Current.GoToAsync("..");
     }
 
-    private async Task CancelAsync() => await Shell.Current.GoToAsync("..");
+    private async Task CancelAsync() => await Shell.Current.GoToAsync("//Dashboard");
 
     private async Task AttachReceiptAsync()
     {

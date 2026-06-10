@@ -41,7 +41,7 @@
         <!-- Centre + button — navigates to Add Expense modal -->
         <ShellContent
             Title=""
-            ContentTemplate="{DataTemplate views:Dashboard}"
+            ContentTemplate="{DataTemplate views:AddExpensePage}"
             Route="AddTab">
             <ShellContent.Icon>
                 <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe145;" Size="26" Color="#534AB7" />

@@ -6,11 +6,6 @@
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
              Shell.NavBarIsVisible="False">
-    <!--
-        BindingContext is NOT set here.
-        DashboardViewModel is injected via DI in DashboardPage.xaml.cs constructor.
-        Setting it in XAML would create a second instance with no services injected.
-    -->
 
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -37,8 +32,7 @@
                 <Setter Property="FontSize" Value="11" />
                 <Setter Property="TextColor" Value="{StaticResource MutedText}" />
             </Style>
-
-            <!-- Fixed: Frame → Border -->
+            
             <Style x:Key="MetricCard" TargetType="Border">
                 <Setter Property="BackgroundColor" Value="{StaticResource CardBackground}" />
                 <Setter Property="StrokeShape" Value="RoundRectangle 12" />
@@ -52,10 +46,6 @@
     <!-- Root scroll -->
     <ScrollView>
         <VerticalStackLayout Spacing="0">
-
-            <!-- ═══════════════════════════════════════════ -->
-            <!-- HERO HEADER                                 -->
-            <!-- ═══════════════════════════════════════════ -->
             <Grid BackgroundColor="{StaticResource DarkHeader}" Padding="16,52,16,24">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -87,7 +77,6 @@
                     </VerticalStackLayout>
 
                     <!-- Notification bell -->
-                    <!-- Fixed: Border only allows one child — wrapped in Grid -->
                     <Border
                         Grid.Column="1"
                         BackgroundColor="#2a2a40"
@@ -199,10 +188,7 @@
                     </Grid>
                 </Grid>
             </Grid>
-
-            <!-- ═══════════════════════════════════════════ -->
-            <!-- METRIC CARDS ROW                           -->
-            <!-- ═══════════════════════════════════════════ -->
+            <!-- METRIC CARDS ROW -->
             <Grid
                 ColumnSpacing="10"
                 Padding="16,16,16,0"
@@ -212,7 +198,6 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <!-- Fixed: Frame → Border -->
                 <!-- Saved this month -->
                 <Border Grid.Column="0" Style="{StaticResource MetricCard}">
                     <VerticalStackLayout Spacing="4">
@@ -232,7 +217,6 @@
                     </VerticalStackLayout>
                 </Border>
 
-                <!-- Fixed: Frame → Border -->
                 <!-- Avg daily spend -->
                 <Border Grid.Column="1" Style="{StaticResource MetricCard}">
                     <VerticalStackLayout Spacing="4">
@@ -252,10 +236,7 @@
                     </VerticalStackLayout>
                 </Border>
             </Grid>
-
-            <!-- ═══════════════════════════════════════════ -->
-            <!-- WEEKLY BAR CHART                           -->
-            <!-- ═══════════════════════════════════════════ -->
+            <!-- WEEKLY BAR CHART -->
             <VerticalStackLayout Padding="16,20,16,0" Spacing="10">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -287,10 +268,8 @@
                     YAxes="{Binding WeeklyYAxes}"
                     ZoomMode="None" />
             </VerticalStackLayout>
-
-            <!-- ═══════════════════════════════════════════ -->
-            <!-- CATEGORY BREAKDOWN (donut)                 -->
-            <!-- ═══════════════════════════════════════════ -->
+            
+            <!-- CATEGORY BREAKDOWN (donut) -->
             <VerticalStackLayout Padding="16,20,16,0" Spacing="10">
                 <Label Style="{StaticResource SectionTitle}" Text="By category" />
 
@@ -348,10 +327,7 @@
                     </CollectionView>
                 </Grid>
             </VerticalStackLayout>
-
-            <!-- ═══════════════════════════════════════════ -->
-            <!-- RECENT TRANSACTIONS                        -->
-            <!-- ═══════════════════════════════════════════ -->
+            <!-- RECENT TRANSACTIONS -->
             <VerticalStackLayout Padding="16,20,16,16" Spacing="10">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -374,7 +350,6 @@
                     </Label>
                 </Grid>
 
-                <!-- Fixed: removed stray BindableLayout, kept only CollectionView -->
                 <CollectionView ItemsSource="{Binding RecentTransactions}">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
@@ -397,7 +372,6 @@
                                     VerticalOptions="Start" />
 
                                 <!-- Category icon -->
-                                <!-- Fixed: Border one child only — Image inside directly -->
                                 <Border
                                     Grid.Column="0"
                                     BackgroundColor="{Binding IconBackground}"
@@ -412,7 +386,6 @@
                                         Source="{Binding IconName}"
                                         VerticalOptions="Center"
                                         WidthRequest="18">
-                                        <!-- Fixed: TintColor not available — use IconTintColorBehavior -->
                                         <Image.Behaviors>
                                             <toolkit:IconTintColorBehavior TintColor="{Binding IconColor}" />
                                         </Image.Behaviors>
@@ -450,7 +423,6 @@
             </VerticalStackLayout>
 
             <!-- Savings alert banner (shown if over budget) -->
-            <!-- Fixed: Border has two children — wrapped in Grid -->
             <Border
                 BackgroundColor="#FFF3CD"
                 IsVisible="{Binding IsOverBudgetWarningVisible}"
@@ -472,9 +444,6 @@
                         VerticalOptions="Center" />
                 </Grid>
             </Border>
-
-            <!-- Bottom padding for tab bar -->
-            <BoxView HeightRequest="90" Color="Transparent" />
 
         </VerticalStackLayout>
     </ScrollView>

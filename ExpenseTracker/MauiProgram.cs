@@ -53,7 +53,15 @@ namespace ExpenseTracker
             builder.Services.AddSingleton<IIntelligenceService, IntelligenceService>();
 
             builder.Services.AddTransient<DashboardViewModel>();
+            builder.Services.AddTransient<AddExpenseViewModel>();
+            builder.Services.AddTransient<ExpensesListViewModel>();
+            builder.Services.AddTransient<InsightsViewModel>();
+            builder.Services.AddTransient<SettingsViewModel>();
             builder.Services.AddTransient<Dashboard>();
+            builder.Services.AddTransient<AddExpensePage>();
+            builder.Services.AddTransient<ExpensesListPage>();
+            builder.Services.AddTransient<InsightsPage>();
+            builder.Services.AddTransient<SettingsPage>();
 
             Routing.RegisterRoute("AddExpensePage", typeof(AddExpensePage));
 

@@ -207,7 +207,7 @@
                 </CollectionView>
             </VerticalStackLayout>
 
-            <!-- ═══ AI SAVINGS TIPS ═══ -->
+            <!-- AI SAVINGS TIPS -->
             <VerticalStackLayout Padding="16,20,16,0" Spacing="10">
                 <Grid ColumnDefinitions="*,Auto">
                     <Label Grid.Column="0" FontAttributes="Bold" FontSize="14" Text="Savings tips" TextColor="#1a1a2e" VerticalOptions="Center" />
