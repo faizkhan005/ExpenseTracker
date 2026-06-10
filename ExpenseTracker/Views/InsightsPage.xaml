@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="ExpenseTracker.Views.InsightsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
+    xmlns:vm="clr-namespace:ExpenseTracker.ViewModels"
+    Shell.NavBarIsVisible="False">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Color x:Key="PrimaryPurple">#534AB7</Color>
+            <Color x:Key="SuccessGreen">#1D9E75</Color>
+            <Color x:Key="DangerRed">#E24B4A</Color>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="0">
+
+            <!-- ═══ TOP BAR ═══ -->
+            <Grid Padding="16,52,16,16" ColumnDefinitions="*,Auto">
+                <Label
+                    Grid.Column="0"
+                    FontAttributes="Bold"
+                    FontSize="22"
+                    Text="Insights"
+                    TextColor="#1a1a2e"
+                    VerticalOptions="Center" />
+                <Border
+                    Grid.Column="1"
+                    BackgroundColor="#F1EFF8"
+                    HeightRequest="36"
+                    StrokeShape="RoundRectangle 10"
+                    StrokeThickness="0"
+                    WidthRequest="36"
+                    VerticalOptions="Center">
+                    <Image HeightRequest="18" WidthRequest="18" HorizontalOptions="Center" VerticalOptions="Center">
+                        <Image.Source>
+                            <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe896;" Color="#534AB7" Size="18" />
+                        </Image.Source>
+                    </Image>
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding ExportCommand}" />
+                    </Border.GestureRecognizers>
+                </Border>
+            </Grid>
+
+            <!-- ═══ SEGMENT CONTROL ═══ -->
+            <Border
+                BackgroundColor="#F1EFF8"
+                Margin="16,0,16,20"
+                Padding="3"
+                StrokeShape="RoundRectangle 12"
+                StrokeThickness="0">
+                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="2">
+                    <Border
+                        Grid.Column="0"
+                        Padding="0,8"
+                        StrokeShape="RoundRectangle 10"
+                        StrokeThickness="0"
+                        BackgroundColor="{Binding IsOverviewSelected, Converter={StaticResource SegBgConverter}}">
+                        <Label FontSize="12" FontAttributes="Bold" HorizontalOptions="Center"
+                               Text="Overview"
+                               TextColor="{Binding IsOverviewSelected, Converter={StaticResource SegTextConverter}}" />
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SelectSegmentCommand}" CommandParameter="overview" />
+                        </Border.GestureRecognizers>
+                    </Border>
+                    <Border
+                        Grid.Column="1"
+                        Padding="0,8"
+                        StrokeShape="RoundRectangle 10"
+                        StrokeThickness="0"
+                        BackgroundColor="{Binding IsCategoriesSelected, Converter={StaticResource SegBgConverter}}">
+                        <Label FontSize="12" FontAttributes="Bold" HorizontalOptions="Center"
+                               Text="Categories"
+                               TextColor="{Binding IsCategoriesSelected, Converter={StaticResource SegTextConverter}}" />
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SelectSegmentCommand}" CommandParameter="categories" />
+                        </Border.GestureRecognizers>
+                    </Border>
+                    <Border
+                        Grid.Column="2"
+                        Padding="0,8"
+                        StrokeShape="RoundRectangle 10"
+                        StrokeThickness="0"
+                        BackgroundColor="{Binding IsTrendsSelected, Converter={StaticResource SegBgConverter}}">
+                        <Label FontSize="12" FontAttributes="Bold" HorizontalOptions="Center"
+                               Text="Trends"
+                               TextColor="{Binding IsTrendsSelected, Converter={StaticResource SegTextConverter}}" />
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SelectSegmentCommand}" CommandParameter="trends" />
+                        </Border.GestureRecognizers>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- ═══ OVERVIEW SECTION ═══ -->
+            <VerticalStackLayout IsVisible="{Binding IsOverviewSelected}" Spacing="12" Padding="16,0">
+
+                <!-- Prediction card -->
+                <Border BackgroundColor="#1a1a2e" Padding="16" StrokeShape="RoundRectangle 14" StrokeThickness="0">
+                    <VerticalStackLayout Spacing="6">
+                        <Label CharacterSpacing="1" FontSize="10" Text="PREDICTED NEXT MONTH" TextColor="#6b7db3" />
+                        <Label FontAttributes="Bold" FontSize="30" Text="{Binding PredictedNextMonth, StringFormat='{0:C0}'}" TextColor="White" />
+                        <Label FontSize="11" Text="{Binding PredictionSubtitle}" TextColor="#6b7db3" />
+                        <BoxView BackgroundColor="#2a2a45" HeightRequest="1" Margin="0,4" />
+                        <Grid ColumnDefinitions="*,*">
+                            <VerticalStackLayout Grid.Column="0" Spacing="3">
+                                <Label FontSize="10" Text="Potential savings" TextColor="#6b7db3" />
+                                <Label FontAttributes="Bold" FontSize="15" Text="{Binding PotentialSavings, StringFormat='{0:C0}'}" TextColor="{StaticResource SuccessGreen}" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="1" Spacing="3">
+                                <Label FontSize="10" Text="Biggest category" TextColor="#6b7db3" />
+                                <Label FontAttributes="Bold" FontSize="15" Text="{Binding BiggestCategory}" TextColor="White" />
+                            </VerticalStackLayout>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Donut + legend -->
+                <Border BackgroundColor="#F8F8FC" Padding="14" StrokeShape="RoundRectangle 14" StrokeThickness="0">
+                    <Grid ColumnDefinitions="140,*" ColumnSpacing="12">
+                        <lvc:PieChart
+                            Grid.Column="0"
+                            HeightRequest="140"
+                            WidthRequest="140"
+                            InitialRotation="-90"
+                            LegendPosition="Hidden"
+                            Series="{Binding CategorySeries}" />
+                        <CollectionView Grid.Column="1" ItemsSource="{Binding CategoryBreakdown}" VerticalOptions="Center">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="8,*,Auto" ColumnSpacing="8" Padding="0,4">
+                                        <BoxView Grid.Column="0" BackgroundColor="{Binding Color}" CornerRadius="4" HeightRequest="8" WidthRequest="8" VerticalOptions="Center" />
+                                        <Label Grid.Column="1" FontSize="12" Text="{Binding Name}" TextColor="#555" VerticalOptions="Center" />
+                                        <Label Grid.Column="2" FontAttributes="Bold" FontSize="12" Text="{Binding Percentage, StringFormat='{0}%'}" TextColor="#1a1a2e" VerticalOptions="Center" />
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </Grid>
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- ═══ CATEGORIES SECTION ═══ -->
+            <VerticalStackLayout IsVisible="{Binding IsCategoriesSelected}" Spacing="10" Padding="16,0">
+                <CollectionView ItemsSource="{Binding CategoryBudgetLines}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border BackgroundColor="#F8F8FC" Margin="0,0,0,8" Padding="14" StrokeShape="RoundRectangle 12" StrokeThickness="0">
+                                <VerticalStackLayout Spacing="8">
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                                        <Border Grid.Column="0"
+                                                BackgroundColor="{Binding Category.BackgroundHex}"
+                                                HeightRequest="34" WidthRequest="34"
+                                                StrokeShape="RoundRectangle 8" StrokeThickness="0">
+                                            <Image HeightRequest="16" WidthRequest="16" HorizontalOptions="Center" VerticalOptions="Center">
+                                                <Image.Source>
+                                                    <FontImageSource FontFamily="MaterialIcons"
+                                                                     Glyph="{Binding Category.IconGlyph}"
+                                                                     Color="{Binding Category.ColorHex}"
+                                                                     Size="16" />
+                                                </Image.Source>
+                                            </Image>
+                                        </Border>
+                                        <Label Grid.Column="1" FontAttributes="Bold" FontSize="13" Text="{Binding Category.Name}" TextColor="#1a1a2e" VerticalOptions="Center" />
+                                        <VerticalStackLayout Grid.Column="2" HorizontalOptions="End" Spacing="1">
+                                            <Label FontAttributes="Bold" FontSize="13" HorizontalOptions="End" Text="{Binding Spent, StringFormat='{0:C}'}" TextColor="#1a1a2e" />
+                                            <Label FontSize="10" HorizontalOptions="End" Text="{Binding Budget, StringFormat='of {0:C}'}" TextColor="#aaa" />
+                                        </VerticalStackLayout>
+                                    </Grid>
+                                    <ProgressBar Progress="{Binding ProgressRatio}" ProgressColor="{Binding ProgressColor}" HeightRequest="5" />
+                                    <Label FontSize="10" Text="{Binding StatusLabel}" TextColor="{Binding StatusColor}" />
+                                </VerticalStackLayout>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+
+            <!-- ═══ TRENDS SECTION ═══ -->
+            <VerticalStackLayout IsVisible="{Binding IsTrendsSelected}" Spacing="12" Padding="16,0">
+                <Label FontAttributes="Bold" FontSize="14" Text="6-month spending trend" TextColor="#1a1a2e" />
+                <lvc:CartesianChart
+                    HeightRequest="180"
+                    LegendPosition="Hidden"
+                    Series="{Binding TrendSeries}"
+                    XAxes="{Binding TrendXAxes}"
+                    YAxes="{Binding TrendYAxes}"
+                    ZoomMode="None" />
+
+                <Label FontAttributes="Bold" FontSize="14" Text="Grocery quantity recommendations" TextColor="#1a1a2e" Margin="0,8,0,0" />
+                <CollectionView ItemsSource="{Binding QuantityRecommendations}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnDefinitions="*,Auto,Auto" Padding="0,8" ColumnSpacing="12">
+                                <Label Grid.Column="0" FontSize="13" Text="{Binding ProductName}" TextColor="#1a1a2e" VerticalOptions="Center" />
+                                <Label Grid.Column="1" FontSize="11" Text="{Binding AverageMonthlyQty, StringFormat='avg {0:0.0}'}" TextColor="#aaa" VerticalOptions="Center" />
+                                <Border Grid.Column="2" BackgroundColor="#EEEDFE" Padding="10,5" StrokeShape="RoundRectangle 8" StrokeThickness="0">
+                                    <Label FontAttributes="Bold" FontSize="12" Text="{Binding RecommendedQty, StringFormat='buy {0}'}" TextColor="#534AB7" />
+                                </Border>
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+
+            <!-- AI SAVINGS TIPS -->
+            <VerticalStackLayout Padding="16,20,16,0" Spacing="10">
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label Grid.Column="0" FontAttributes="Bold" FontSize="14" Text="Savings tips" TextColor="#1a1a2e" VerticalOptions="Center" />
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding IsLoadingTips}" IsVisible="{Binding IsLoadingTips}" Color="{StaticResource PrimaryPurple}" HeightRequest="20" WidthRequest="20" />
+                </Grid>
+
+                <CollectionView ItemsSource="{Binding SavingsTips}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border BackgroundColor="#F8F8FC" Margin="0,0,0,8" Padding="14" StrokeShape="RoundRectangle 12" StrokeThickness="0">
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                                    <Border Grid.Column="0"
+                                            BackgroundColor="{Binding CategoryBackground}"
+                                            HeightRequest="36" WidthRequest="36"
+                                            StrokeShape="RoundRectangle 9"
+                                            StrokeThickness="0"
+                                            VerticalOptions="Start">
+                                        <Image HeightRequest="18" WidthRequest="18" HorizontalOptions="Center" VerticalOptions="Center">
+                                            <Image.Source>
+                                                <FontImageSource FontFamily="MaterialIcons"
+                                                                 Glyph="{Binding CategoryIconGlyph}"
+                                                                 Color="{Binding CategoryIconColor}"
+                                                                 Size="18" />
+                                            </Image.Source>
+                                        </Image>
+                                    </Border>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="4">
+                                        <Label FontAttributes="Bold" FontSize="13" Text="{Binding Title}" TextColor="#1a1a2e" />
+                                        <Label FontSize="11" Text="{Binding Body}" TextColor="#666" LineBreakMode="WordWrap" />
+                                        <Label FontAttributes="Bold" FontSize="11" Text="{Binding PotentialSaving, StringFormat='↑ Save up to {0:C0}/month'}" TextColor="{StaticResource SuccessGreen}" />
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+
+            <BoxView HeightRequest="100" Color="Transparent" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

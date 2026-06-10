@@ -1,5 +1,6 @@
 ﻿using ExpenseTracker.Domain.Entities;
 using SQLite;
+using System.Diagnostics;
 
 namespace ExpenseTracker.Infrastructure.Data;
 
@@ -13,7 +14,6 @@ public class AppDbContext
 
     private readonly string _dbPath;
 
-    private const string DbName = "expense_tracker.db3";
     private const SQLiteOpenFlags Flags =
         SQLiteOpenFlags.ReadWrite |
         SQLiteOpenFlags.Create |
@@ -32,7 +32,6 @@ public class AppDbContext
         if (_connection is not null)
             return _connection;
 
-        //var dbPath = Path.Combine(FileSystem.AppDataDirectory, DbName);
         _connection = new SQLiteAsyncConnection(_dbPath, Flags);
 
         await InitialiseTablesAsync(_connection);
@@ -45,24 +44,35 @@ public class AppDbContext
 
     private static async Task InitialiseTablesAsync(SQLiteAsyncConnection db)
     {
-        await db.CreateTableAsync<Category>();
-        await db.CreateTableAsync<Expense>();
-        await db.CreateTableAsync<LineItem>();
-        await db.CreateTableAsync<RecurringExpense>();
-        await db.CreateTableAsync<Budget>();
-        await db.CreateTableAsync<SmsRule>();
-        await db.CreateTableAsync<SavedLocation>();
+        try
+        {
+            await db.CreateTableAsync<Category>();
+            await db.CreateTableAsync<Expense>();
+            await db.CreateTableAsync<LineItem>();
+            await db.CreateTableAsync<RecurringExpense>();
+            await db.CreateTableAsync<Budget>();
+            await db.CreateTableAsync<SmsRule>();
+            await db.CreateTableAsync<SavedLocation>();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Message: {ex.Message}");
+            Debug.WriteLine($"StackTrace: {ex.StackTrace}");
+
+        }
     }
 
     // Seed default categories
 
     private static async Task SeedDefaultDataAsync(SQLiteAsyncConnection db)
     {
-        var existingCount = await db.Table<Category>().CountAsync();
-        if (existingCount > 0)
-            return; // Already seeded
+        try
+        {
+            var existingCount = await db.Table<Category>().CountAsync();
+            if (existingCount > 0)
+                return; // Already seeded
 
-        var defaults = new List<Category>
+            var defaults = new List<Category>
         {
             new() { Name = "Food",          IconKey = "cart",       ColorHex = "#3B6D11", BackgroundHex = "#EAF3DE", IsSystem = true },
             new() { Name = "Transport",     IconKey = "car",        ColorHex = "#185FA5", BackgroundHex = "#E6F1FB", IsSystem = true },
@@ -75,12 +85,12 @@ public class AppDbContext
             new() { Name = "Other",         IconKey = "dots",       ColorHex = "#5F5E5A", BackgroundHex = "#F1EFE8", IsSystem = true },
         };
 
-        await db.InsertAllAsync(defaults);
+            await db.InsertAllAsync(defaults);
 
-        // Seed default SMS rules for common US banks (Android)
-        var foodCategoryId = (await db.Table<Category>().Where(c => c.Name == "Food").FirstOrDefaultAsync())?.Id ?? 1;
+            // Seed default SMS rules for common US banks (Android)
+            var foodCategoryId = (await db.Table<Category>().Where(c => c.Name == "Food").FirstOrDefaultAsync())?.Id ?? 1;
 
-        var smsRules = new List<SmsRule>
+            var smsRules = new List<SmsRule>
         {
             new()
             {
@@ -111,7 +121,12 @@ public class AppDbContext
             },
         };
 
-        await db.InsertAllAsync(smsRules);
+            await db.InsertAllAsync(smsRules);
+        }
+        catch (Exception ex) 
+        {
+            Console.WriteLine(ex.Message);
+        }
     }
 
     //Close

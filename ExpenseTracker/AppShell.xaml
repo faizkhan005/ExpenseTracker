@@ -3,12 +3,69 @@
     x:Class="ExpenseTracker.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:ExpenseTracker.Views"
-    Title="ExpenseTracker">
+    xmlns:views="clr-namespace:ExpenseTracker.Views"
+    Shell.FlyoutBehavior="Disabled">
 
-    <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:Dashboard}"
-        Route="MainPage" />
+    <Shell.Resources>
+        <ResourceDictionary>
+            <Style TargetType="TabBar">
+                <Setter Property="Shell.TabBarBackgroundColor" Value="White" />
+                <Setter Property="Shell.TabBarForegroundColor" Value="#534AB7" />
+                <Setter Property="Shell.TabBarUnselectedColor" Value="#AAAAAA" />
+                <Setter Property="Shell.TabBarTitleColor" Value="#534AB7" />
+            </Style>
+        </ResourceDictionary>
+    </Shell.Resources>
 
+    <TabBar>
+        <!-- Home / Dashboard -->
+        <ShellContent
+            Title="Home"
+            ContentTemplate="{DataTemplate views:Dashboard}"
+            Route="Dashboard">
+            <ShellContent.Icon>
+                <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe88a;" Size="22" />
+            </ShellContent.Icon>
+        </ShellContent>
+
+        <!-- Expenses list -->
+        <ShellContent
+            Title="Expenses"
+            ContentTemplate="{DataTemplate views:ExpensesListPage}"
+            Route="ExpensesPage">
+            <ShellContent.Icon>
+                <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe896;" Size="22" />
+            </ShellContent.Icon>
+        </ShellContent>
+
+        <!-- Centre + button — navigates to Add Expense modal -->
+        <ShellContent
+            Title=""
+            ContentTemplate="{DataTemplate views:AddExpensePage}"
+            Route="AddTab">
+            <ShellContent.Icon>
+                <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe145;" Size="26" Color="#534AB7" />
+            </ShellContent.Icon>
+        </ShellContent>
+
+        <!-- Insights -->
+        <ShellContent
+            Title="Insights"
+            ContentTemplate="{DataTemplate views:InsightsPage}"
+            Route="InsightsPage">
+            <ShellContent.Icon>
+                <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe801;" Size="22" />
+            </ShellContent.Icon>
+        </ShellContent>
+
+        <!-- Settings -->
+        <ShellContent
+            Title="Settings"
+            ContentTemplate="{DataTemplate views:SettingsPage}"
+            Route="SettingsPage">
+            <ShellContent.Icon>
+                <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe8b8;" Size="22" />
+            </ShellContent.Icon>
+        </ShellContent>
+    </TabBar>
 </Shell>

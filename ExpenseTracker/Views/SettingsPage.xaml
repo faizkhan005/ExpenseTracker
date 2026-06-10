@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="ExpenseTracker.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:ExpenseTracker.ViewModels"
+    Shell.NavBarIsVisible="False">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Color x:Key="PrimaryPurple">#534AB7</Color>
+            <Color x:Key="DangerRed">#E24B4A</Color>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="0">
+
+            <!-- ═══ TOP BAR ═══ -->
+            <VerticalStackLayout Padding="16,52,16,24" Spacing="4">
+                <Label FontAttributes="Bold" FontSize="22" Text="Settings" TextColor="#1a1a2e" />
+                <Label FontSize="12" Text="Manage your budget, categories and automation" TextColor="#888" />
+            </VerticalStackLayout>
+
+            <!-- ═══ SECTION: BUDGET ═══ -->
+            <Label Padding="16,0,16,8" FontAttributes="Bold" FontSize="11" Text="BUDGET" TextColor="#aaa" CharacterSpacing="1" />
+            <Border BackgroundColor="#F8F8FC" Margin="16,0,16,20" StrokeShape="RoundRectangle 14" StrokeThickness="0">
+                <VerticalStackLayout>
+
+                    <!-- Monthly budget row -->
+                    <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,14" ColumnSpacing="12">
+                        <Border Grid.Column="0" BackgroundColor="#EEEDFE" HeightRequest="36" WidthRequest="36" StrokeShape="RoundRectangle 9" StrokeThickness="0">
+                            <Image HeightRequest="18" WidthRequest="18" HorizontalOptions="Center" VerticalOptions="Center">
+                                <Image.Source>
+                                    <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe227;" Color="#534AB7" Size="18" />
+                                </Image.Source>
+                            </Image>
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                            <Label FontAttributes="Bold" FontSize="13" Text="Monthly budget" TextColor="#1a1a2e" />
+                            <Label FontSize="11" Text="Your overall spending limit" TextColor="#aaa" />
+                        </VerticalStackLayout>
+                        <Border Grid.Column="2" BackgroundColor="#F1EFF8" Padding="10,6" StrokeShape="RoundRectangle 8" StrokeThickness="0" VerticalOptions="Center">
+                            <Entry
+                                BackgroundColor="Transparent"
+                                FontAttributes="Bold"
+                                FontSize="14"
+                                Keyboard="Numeric"
+                                Text="{Binding MonthlyBudgetText}"
+                                TextColor="{StaticResource PrimaryPurple}"
+                                WidthRequest="70" />
+                        </Border>
+                    </Grid>
+
+                    <BoxView BackgroundColor="#EEEEF5" HeightRequest="0.5" Margin="16,0" />
+
+                    <!-- Savings goal -->
+                    <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,14" ColumnSpacing="12">
+                        <Border Grid.Column="0" BackgroundColor="#E1F5EE" HeightRequest="36" WidthRequest="36" StrokeShape="RoundRectangle 9" StrokeThickness="0">
+                            <Image HeightRequest="18" WidthRequest="18" HorizontalOptions="Center" VerticalOptions="Center">
+                                <Image.Source>
+                                    <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe8dc;" Color="#1D9E75" Size="18" />
+                                </Image.Source>
+                            </Image>
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                            <Label FontAttributes="Bold" FontSize="13" Text="Savings goal" TextColor="#1a1a2e" />
+                            <Label FontSize="11" Text="Target amount to save monthly" TextColor="#aaa" />
+                        </VerticalStackLayout>
+                        <Border Grid.Column="2" BackgroundColor="#E9F7F2" Padding="10,6" StrokeShape="RoundRectangle 8" StrokeThickness="0" VerticalOptions="Center">
+                            <Entry
+                                BackgroundColor="Transparent"
+                                FontAttributes="Bold"
+                                FontSize="14"
+                                Keyboard="Numeric"
+                                Text="{Binding SavingsGoalText}"
+                                TextColor="#1D9E75"
+                                WidthRequest="70" />
+                        </Border>
+                    </Grid>
+
+                    <BoxView BackgroundColor="#EEEEF5" HeightRequest="0.5" Margin="16,0" />
+
+                    <!-- Save budget button -->
+                    <Border
+                        BackgroundColor="{StaticResource PrimaryPurple}"
+                        Margin="16,12,16,16"
+                        Padding="0,12"
+                        StrokeShape="RoundRectangle 10"
+                        StrokeThickness="0">
+                        <Label FontAttributes="Bold" FontSize="13" HorizontalOptions="Center" Text="Save budget" TextColor="White" />
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SaveBudgetCommand}" />
+                        </Border.GestureRecognizers>
+                    </Border>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ═══ SECTION: AUTOMATION ═══ -->
+            <Label Padding="16,0,16,8" FontAttributes="Bold" FontSize="11" Text="AUTOMATION" TextColor="#aaa" CharacterSpacing="1" />
+            <Border BackgroundColor="#F8F8FC" Margin="16,0,16,20" StrokeShape="RoundRectangle 14" StrokeThickness="0">
+                <VerticalStackLayout>
+
+                    <!-- SMS parsing -->
+                    <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,14" ColumnSpacing="12">
+                        <Border Grid.Column="0" BackgroundColor="#E6F1FB" HeightRequest="36" WidthRequest="36" StrokeShape="RoundRectangle 9" StrokeThickness="0">
+                            <Image HeightRequest="18" WidthRequest="18" HorizontalOptions="Center" VerticalOptions="Center">
+                                <Image.Source>
+                                    <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe61f;" Color="#185FA5" Size="18" />
+                                </Image.Source>
+                            </Image>
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                            <Label FontAttributes="Bold" FontSize="13" Text="SMS transaction parsing" TextColor="#1a1a2e" />
+                            <Label FontSize="11" Text="Auto-log from bank SMS alerts (Android)" TextColor="#aaa" />
+                        </VerticalStackLayout>
+                        <Switch Grid.Column="2" IsToggled="{Binding IsSmsParsingEnabled}" OnColor="{StaticResource PrimaryPurple}" VerticalOptions="Center" />
+                    </Grid>
+
+                    <BoxView BackgroundColor="#EEEEF5" HeightRequest="0.5" Margin="16,0" />
+
+                    <!-- Location prompts -->
+                    <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,14" ColumnSpacing="12">
+                        <Border Grid.Column="0" BackgroundColor="#EAF3DE" HeightRequest="36" WidthRequest="36" StrokeShape="RoundRectangle 9" StrokeThickness="0">
+                            <Image HeightRequest="18" WidthRequest="18" HorizontalOptions="Center" VerticalOptions="Center">
+                                <Image.Source>
+                                    <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe0c8;" Color="#3B6D11" Size="18" />
+                                </Image.Source>
+                            </Image>
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                            <Label FontAttributes="Bold" FontSize="13" Text="Location-based prompts" TextColor="#1a1a2e" />
+                            <Label FontSize="11" Text="Prompt when leaving stores" TextColor="#aaa" />
+                        </VerticalStackLayout>
+                        <Switch Grid.Column="2" IsToggled="{Binding IsLocationPromptsEnabled}" OnColor="{StaticResource PrimaryPurple}" VerticalOptions="Center" />
+                    </Grid>
+
+                    <BoxView BackgroundColor="#EEEEF5" HeightRequest="0.5" Margin="16,0" />
+
+                    <!-- Recurring expenses -->
+                    <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,14" ColumnSpacing="12">
+                        <Border Grid.Column="0" BackgroundColor="#FAEEDA" HeightRequest="36" WidthRequest="36" StrokeShape="RoundRectangle 9" StrokeThickness="0">
+                            <Image HeightRequest="18" WidthRequest="18" HorizontalOptions="Center" VerticalOptions="Center">
+                                <Image.Source>
+                                    <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe042;" Color="#633806" Size="18" />
+                                </Image.Source>
+                            </Image>
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                            <Label FontAttributes="Bold" FontSize="13" Text="Recurring expenses" TextColor="#1a1a2e" />
+                            <Label FontSize="11" Text="{Binding RecurringCountLabel}" TextColor="#aaa" />
+                        </VerticalStackLayout>
+                        <Image HeightRequest="16" WidthRequest="16" VerticalOptions="Center">
+                            <Image.Source>
+                                <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe5cc;" Color="#aaa" Size="16" />
+                            </Image.Source>
+                        </Image>
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ManageRecurringCommand}" />
+                        </Grid.GestureRecognizers>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ═══ SECTION: CATEGORIES ═══ -->
+            <Label Padding="16,0,16,8" FontAttributes="Bold" FontSize="11" Text="CATEGORIES" TextColor="#aaa" CharacterSpacing="1" />
+            <Border BackgroundColor="#F8F8FC" Margin="16,0,16,20" StrokeShape="RoundRectangle 14" StrokeThickness="0">
+                <VerticalStackLayout>
+                    <CollectionView ItemsSource="{Binding Categories}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,12" ColumnSpacing="12">
+                                    <Border Grid.Column="0" BackgroundColor="{Binding BackgroundHex}" HeightRequest="34" WidthRequest="34" StrokeShape="RoundRectangle 8" StrokeThickness="0">
+                                        <Image HeightRequest="16" WidthRequest="16" HorizontalOptions="Center" VerticalOptions="Center">
+                                            <Image.Source>
+                                                <FontImageSource FontFamily="MaterialIcons"
+                                                                 Glyph="{Binding IconGlyph}"
+                                                                 Color="{Binding ColorHex}"
+                                                                 Size="16" />
+                                            </Image.Source>
+                                        </Image>
+                                    </Border>
+                                    <Label Grid.Column="1" FontSize="13" Text="{Binding Name}" TextColor="#1a1a2e" VerticalOptions="Center" />
+                                    <Image Grid.Column="2" HeightRequest="14" WidthRequest="14" VerticalOptions="Center" IsVisible="{Binding IsSystem, Converter={StaticResource InverseBoolConverter}}">
+                                        <Image.Source>
+                                            <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe872;" Color="#E24B4A" Size="14" />
+                                        </Image.Source>
+                                        <Image.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:SettingsViewModel}}, Path=DeleteCategoryCommand}" CommandParameter="{Binding .}" />
+                                        </Image.GestureRecognizers>
+                                    </Image>
+                                    <BoxView Grid.Column="0" Grid.ColumnSpan="3" BackgroundColor="#EEEEF5" HeightRequest="0.5" VerticalOptions="End" />
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                    <!-- Add category -->
+                    <Grid ColumnDefinitions="Auto,*" Padding="16,12" ColumnSpacing="12">
+                        <Border Grid.Column="0" BackgroundColor="#EEEDFE" HeightRequest="34" WidthRequest="34" StrokeShape="RoundRectangle 8" StrokeThickness="0">
+                            <Image HeightRequest="16" WidthRequest="16" HorizontalOptions="Center" VerticalOptions="Center">
+                                <Image.Source>
+                                    <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe145;" Color="#534AB7" Size="16" />
+                                </Image.Source>
+                            </Image>
+                        </Border>
+                        <Label Grid.Column="1" FontAttributes="Bold" FontSize="13" Text="Add custom category" TextColor="{StaticResource PrimaryPurple}" VerticalOptions="Center" />
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding AddCategoryCommand}" />
+                        </Grid.GestureRecognizers>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ═══ SECTION: DATA ═══ -->
+            <Label Padding="16,0,16,8" FontAttributes="Bold" FontSize="11" Text="DATA" TextColor="#aaa" CharacterSpacing="1" />
+            <Border BackgroundColor="#F8F8FC" Margin="16,0,16,20" StrokeShape="RoundRectangle 14" StrokeThickness="0">
+                <VerticalStackLayout>
+
+                    <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,14" ColumnSpacing="12">
+                        <Border Grid.Column="0" BackgroundColor="#EAF3DE" HeightRequest="36" WidthRequest="36" StrokeShape="RoundRectangle 9" StrokeThickness="0">
+                            <Image HeightRequest="18" WidthRequest="18" HorizontalOptions="Center" VerticalOptions="Center">
+                                <Image.Source>
+                                    <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe2c4;" Color="#3B6D11" Size="18" />
+                                </Image.Source>
+                            </Image>
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                            <Label FontAttributes="Bold" FontSize="13" Text="Export to CSV" TextColor="#1a1a2e" />
+                            <Label FontSize="11" Text="Download all your expense data" TextColor="#aaa" />
+                        </VerticalStackLayout>
+                        <Image Grid.Column="2" HeightRequest="16" WidthRequest="16" VerticalOptions="Center">
+                            <Image.Source>
+                                <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe5cc;" Color="#aaa" Size="16" />
+                            </Image.Source>
+                        </Image>
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ExportCsvCommand}" />
+                        </Grid.GestureRecognizers>
+                    </Grid>
+
+                    <BoxView BackgroundColor="#EEEEF5" HeightRequest="0.5" Margin="16,0" />
+
+                    <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,14" ColumnSpacing="12">
+                        <Border Grid.Column="0" BackgroundColor="#FAECE7" HeightRequest="36" WidthRequest="36" StrokeShape="RoundRectangle 9" StrokeThickness="0">
+                            <Image HeightRequest="18" WidthRequest="18" HorizontalOptions="Center" VerticalOptions="Center">
+                                <Image.Source>
+                                    <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe872;" Color="#E24B4A" Size="18" />
+                                </Image.Source>
+                            </Image>
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                            <Label FontAttributes="Bold" FontSize="13" Text="Clear all data" TextColor="{StaticResource DangerRed}" />
+                            <Label FontSize="11" Text="Permanently delete all expenses" TextColor="#aaa" />
+                        </VerticalStackLayout>
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ClearDataCommand}" />
+                        </Grid.GestureRecognizers>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <BoxView HeightRequest="100" Color="Transparent" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
