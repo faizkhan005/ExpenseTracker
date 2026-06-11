@@ -28,12 +28,14 @@ public partial class DashboardViewModel : ObservableObject
         GoToMonthlyCommand = new AsyncRelayCommand(GoToMonthlyAsync);
         GoToExpensesCommand = new AsyncRelayCommand(GoToExpensesAsync);
         AddExpenseCommand = new AsyncRelayCommand(AddExpenseAsync);
+        OpenNotificationsCommand = new AsyncRelayCommand(OpenNotificationsAsync);
     }
 
     // Commands 
     public ICommand GoToMonthlyCommand { get; }
     public ICommand GoToExpensesCommand { get; }
     public ICommand AddExpenseCommand { get; }
+    public ICommand OpenNotificationsCommand { get; }
 
     // Observable properties
     [ObservableProperty]
@@ -80,6 +82,13 @@ public partial class DashboardViewModel : ObservableObject
     public partial ISeries[] WeeklySeries { get; private set; } = [];
     [ObservableProperty]
     public partial ISeries[] CategorySeries { get; private set; } = [];
+
+    //notification
+    [ObservableProperty]
+    public partial ObservableCollection<NotificationItem> Notifications { get; set; } = [];
+
+    [ObservableProperty]
+    public partial int UnreadCount { get; set; }
 
     // Computed display strings
     public string TotalSpentFormatted => TotalSpent.ToString("C0", CultureInfo.CreateSpecificCulture("en-US"));
@@ -208,6 +217,9 @@ public partial class DashboardViewModel : ObservableObject
         // Refresh all computed string bindings
         NotifyComputedProperties();
 
+        // Build notifications based on current data
+        await BuildNotificationsAsync(expenses,BudgetLimit);
+
         IsLoading = false;
     }
 
@@ -316,5 +328,82 @@ public partial class DashboardViewModel : ObservableObject
     private Task GoToMonthlyAsync() => Shell.Current.GoToAsync("//InsightsPage");
     private Task GoToExpensesAsync() => Shell.Current.GoToAsync("//ExpensesPage");
     private Task AddExpenseAsync() => Shell.Current.GoToAsync("AddExpensePage");
+    private async Task OpenNotificationsAsync()
+    => await Shell.Current.GoToAsync("NotificationsPage");
+
+    //notifcation Builder
+    private async Task BuildNotificationsAsync(List<Expense> expenses, decimal budgetLimit)
+    {
+        var items = new List<NotificationItem>();
+        var now = DateTime.Now;
+
+        // Over budget warning
+        var totalSpent = expenses.Where(e => e.Type == TransactionType.Expense).Sum(e => e.Amount);
+        if (budgetLimit > 0 && totalSpent > budgetLimit)
+        {
+            items.Add(new NotificationItem
+            {
+                Title = "Over budget",
+                Body = $"You've exceeded your {budgetLimit:C0} budget by {(totalSpent - budgetLimit):C0}.",
+                IconGlyph = "\ue002",
+                IconColor = Color.FromArgb("#712B13"),
+                IconBackground = Color.FromArgb("#FAECE7"),
+                CreatedAt = now
+            });
+        }
+
+        // Approaching budget (80%)
+        else if (budgetLimit > 0 && totalSpent >= budgetLimit * 0.8m)
+        {
+            items.Add(new NotificationItem
+            {
+                Title = "Approaching budget limit",
+                Body = $"You've used {(totalSpent / budgetLimit * 100):0}% of your monthly budget.",
+                IconGlyph = "\ue002",
+                IconColor = Color.FromArgb("#633806"),
+                IconBackground = Color.FromArgb("#FAEEDA"),
+                CreatedAt = now
+            });
+        }
+
+        // High spending day
+        var todaySpend = expenses
+            .Where(e => e.Date.Date == DateTime.Today && e.Type == TransactionType.Expense)
+            .Sum(e => e.Amount);
+        var avgDaily = now.Day > 1
+            ? expenses.Where(e => e.Type == TransactionType.Expense).Sum(e => e.Amount) / now.Day
+            : 0;
+
+        if (avgDaily > 0 && todaySpend > avgDaily * 1.5m)
+        {
+            items.Add(new NotificationItem
+            {
+                Title = "High spending today",
+                Body = $"You've spent {todaySpend:C0} today — {((todaySpend / avgDaily - 1) * 100):0}% above your daily average.",
+                IconGlyph = "\ue8b1",
+                IconColor = Color.FromArgb("#185FA5"),
+                IconBackground = Color.FromArgb("#E6F1FB"),
+                CreatedAt = now
+            });
+        }
+
+        // No expenses logged today
+        if (!expenses.Any(e => e.Date.Date == DateTime.Today))
+        {
+            items.Add(new NotificationItem
+            {
+                Title = "Don't forget to log",
+                Body = "You haven't added any expenses today. Tap + to add one.",
+                IconGlyph = "\ue7f4",
+                IconColor = Color.FromArgb("#0F6E56"),
+                IconBackground = Color.FromArgb("#E1F5EE"),
+                CreatedAt = now
+            });
+        }
+
+        Notifications = new ObservableCollection<NotificationItem>(items);
+        UnreadCount = items.Count(n => !n.IsRead);
+        HasNotifications = UnreadCount > 0;
+    }
 
 }
