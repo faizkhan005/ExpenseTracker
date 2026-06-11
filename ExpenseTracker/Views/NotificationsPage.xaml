@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ExpenseTracker.Views.NotificationsPage"
+             xmlns:vm="clr-namespace:ExpenseTracker.ViewModels"
+             x:DataType="vm:NotificationsViewModel"
+             Shell.NavBarIsVisible="False">
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- Top bar -->
+        <Grid Grid.Row="0" Padding="16,52,16,16" ColumnDefinitions="Auto,*,Auto">
+            <Border Grid.Column="0"
+                    BackgroundColor="#F1EFF8" HeightRequest="34" WidthRequest="34"
+                    StrokeShape="RoundRectangle 8" StrokeThickness="0" VerticalOptions="Center">
+                <Image HeightRequest="18" WidthRequest="18"
+                       HorizontalOptions="Center" VerticalOptions="Center">
+                    <Image.Source>
+                        <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe5cb;" Color="#534AB7" Size="18" />
+                    </Image.Source>
+                </Image>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding BackCommand}" />
+                </Border.GestureRecognizers>
+            </Border>
+            <Label Grid.Column="1" FontAttributes="Bold" FontSize="17"
+                   HorizontalOptions="Center" Text="Notifications"
+                   TextColor="#1a1a2e" VerticalOptions="Center" />
+            <Label Grid.Column="2" FontSize="12" Text="Mark all read"
+                   TextColor="#534AB7" VerticalOptions="Center">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding MarkAllReadCommand}" />
+                </Label.GestureRecognizers>
+            </Label>
+        </Grid>
+
+        <!-- Notification list -->
+        <CollectionView Grid.Row="1" ItemsSource="{Binding Notifications}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border
+                        BackgroundColor="{Binding IsRead, Converter={StaticResource NotifBgConverter}}"
+                        Margin="16,0,16,8"
+                        Padding="14"
+                        StrokeShape="RoundRectangle 12"
+                        StrokeThickness="0">
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                            <Border Grid.Column="0"
+                                    BackgroundColor="{Binding IconBackground}"
+                                    HeightRequest="40" WidthRequest="40"
+                                    StrokeShape="RoundRectangle 10" StrokeThickness="0"
+                                    VerticalOptions="Start">
+                                <Image HeightRequest="20" WidthRequest="20"
+                                       HorizontalOptions="Center" VerticalOptions="Center">
+                                    <Image.Source>
+                                        <FontImageSource FontFamily="MaterialIcons"
+                                                         Glyph="{Binding IconGlyph}"
+                                                         Color="{Binding IconColor}"
+                                                         Size="20" />
+                                    </Image.Source>
+                                </Image>
+                            </Border>
+                            <VerticalStackLayout Grid.Column="1" Spacing="3" VerticalOptions="Center">
+                                <Label FontAttributes="Bold" FontSize="13"
+                                       Text="{Binding Title}" TextColor="#1a1a2e" />
+                                <Label FontSize="11" Text="{Binding Body}"
+                                       TextColor="#666" LineBreakMode="WordWrap" />
+                            </VerticalStackLayout>
+                            <Label Grid.Column="2" FontSize="10"
+                                   Text="{Binding TimeLabel}" TextColor="#aaa"
+                                   VerticalOptions="Start" />
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+            <CollectionView.EmptyView>
+                <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center"
+                                     Spacing="12" Padding="40">
+                    <Image HeightRequest="56" WidthRequest="56"
+                           HorizontalOptions="Center" Opacity="0.3">
+                        <Image.Source>
+                            <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe7f4;"
+                                             Color="#aaa" Size="56" />
+                        </Image.Source>
+                    </Image>
+                    <Label Text="All caught up" FontSize="15" FontAttributes="Bold"
+                           TextColor="#aaa" HorizontalOptions="Center" />
+                    <Label Text="No new notifications" FontSize="12"
+                           TextColor="#bbb" HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+        </CollectionView>
+    </Grid>
+</ContentPage>
