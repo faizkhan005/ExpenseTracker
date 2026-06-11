@@ -36,56 +36,56 @@ public partial class InsightsViewModel : ObservableObject
 
     // Segment state 
     [ObservableProperty]
-    private partial bool IsOverviewSelected { get; set; } = true;
+    public  partial bool IsOverviewSelected { get; set; } = true;
 
     [ObservableProperty]
-    private partial bool IsCategoriesSelected { get; set; } = false;
+    public partial bool IsCategoriesSelected { get; set; } = false;
 
     [ObservableProperty]
-    private partial bool IsTrendsSelected { get; set; } = false;
+    public partial bool IsTrendsSelected { get; set; } = false;
 
     // Overview 
     [ObservableProperty]
-    private partial decimal PredictedNextMonth { get; set; }
+    public partial decimal PredictedNextMonth { get; set; }
 
     [ObservableProperty]
-    private partial decimal PotentialSavings { get; set; }
+    public partial decimal PotentialSavings { get; set; }
 
     [ObservableProperty]
-    private partial string BiggestCategory { get; set; } = string.Empty;
+    public partial string BiggestCategory { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private partial string PredictionSubtitle { get; set; } = string.Empty;
+    public partial string PredictionSubtitle { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private partial ISeries[] CategorySeries { get; set; } = Array.Empty<ISeries>();
+    public partial ISeries[] CategorySeries { get; set; } = Array.Empty<ISeries>();
 
     [ObservableProperty]
-    private partial ObservableCollection<CategoryLegendItem> CategoryBreakdown { get; set; } = [];
+    public partial ObservableCollection<CategoryLegendItem> CategoryBreakdown { get; set; } = [];
 
     // Categories
     [ObservableProperty]
-    private partial ObservableCollection<CategoryBudgetLineDisplay> CategoryBudgetLines { get; set; } = [];
+    public partial ObservableCollection<CategoryBudgetLineDisplay> CategoryBudgetLines { get; set; } = [];
 
     // Trends
     [ObservableProperty]
-    private partial ISeries[] TrendSeries { get; set; } = Array.Empty<ISeries>();
+    public partial ISeries[] TrendSeries { get; set; } = Array.Empty<ISeries>();
 
     [ObservableProperty]
-    private partial Axis[] TrendXAxes { get; set; } = Array.Empty<Axis>();
+    public partial Axis[] TrendXAxes { get; set; } = Array.Empty<Axis>();
 
     [ObservableProperty]
-    private partial Axis[] TrendYAxes { get; set; } = Array.Empty<Axis>();
+    public partial Axis[] TrendYAxes { get; set; } = Array.Empty<Axis>();
 
     [ObservableProperty]
-    private partial ObservableCollection<QuantityRecommendation> QuantityRecommendations { get; set; } = [];
+    public partial ObservableCollection<QuantityRecommendation> QuantityRecommendations { get; set; } = [];
 
     // Tips
     [ObservableProperty]
-    private partial ObservableCollection<SavingsTipDisplay> SavingsTips { get; set; } = [];
+    public partial ObservableCollection<SavingsTipDisplay> SavingsTips { get; set; } = [];
 
     [ObservableProperty]
-    private partial bool IsLoadingTips { get; set; }
+    public partial bool IsLoadingTips { get; set; }
 
     // Load 
     public async Task LoadDataAsync()

@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage
-    x:Class="ExpenseTracker.Views.InsightsPage"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
-    xmlns:vm="clr-namespace:ExpenseTracker.ViewModels"
-    Shell.NavBarIsVisible="False">
+<ContentPage x:Class="ExpenseTracker.Views.InsightsPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
+             xmlns:vm="clr-namespace:ExpenseTracker.ViewModels"
+             xmlns:models="clr-namespace:ExpenseTracker.Models"
+             xmlns:dto="clr-namespace:ExpenseTracker.Application.DTO;assembly=ExpenseTracker.Application"
+             xmlns:converters="clr-namespace:ExpenseTracker.Converters"
+             x:DataType="vm:InsightsViewModel"
+             Shell.NavBarIsVisible="False">
 
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -13,12 +16,16 @@
             <Color x:Key="SuccessGreen">#1D9E75</Color>
             <Color x:Key="DangerRed">#E24B4A</Color>
         </ResourceDictionary>
+        <ResourceDictionary>
+            <converters:SegBgConverter x:Key="SegBgConverter" />
+            <converters:SegTextConverter x:Key="SegTextConverter" />
+        </ResourceDictionary>
     </ContentPage.Resources>
 
     <ScrollView>
         <VerticalStackLayout Spacing="0">
 
-            <!-- ═══ TOP BAR ═══ -->
+            <!-- TOP BAR -->
             <Grid Padding="16,52,16,16" ColumnDefinitions="*,Auto">
                 <Label
                     Grid.Column="0"
@@ -46,7 +53,7 @@
                 </Border>
             </Grid>
 
-            <!-- ═══ SEGMENT CONTROL ═══ -->
+            <!-- SEGMENT CONTROL -->
             <Border
                 BackgroundColor="#F1EFF8"
                 Margin="16,0,16,20"
@@ -96,7 +103,7 @@
                 </Grid>
             </Border>
 
-            <!-- ═══ OVERVIEW SECTION ═══ -->
+            <!-- OVERVIEW SECTION -->
             <VerticalStackLayout IsVisible="{Binding IsOverviewSelected}" Spacing="12" Padding="16,0">
 
                 <!-- Prediction card -->
@@ -131,7 +138,7 @@
                             Series="{Binding CategorySeries}" />
                         <CollectionView Grid.Column="1" ItemsSource="{Binding CategoryBreakdown}" VerticalOptions="Center">
                             <CollectionView.ItemTemplate>
-                                <DataTemplate>
+                                <DataTemplate x:DataType="models:CategoryLegendItem">
                                     <Grid ColumnDefinitions="8,*,Auto" ColumnSpacing="8" Padding="0,4">
                                         <BoxView Grid.Column="0" BackgroundColor="{Binding Color}" CornerRadius="4" HeightRequest="8" WidthRequest="8" VerticalOptions="Center" />
                                         <Label Grid.Column="1" FontSize="12" Text="{Binding Name}" TextColor="#555" VerticalOptions="Center" />
@@ -144,11 +151,11 @@
                 </Border>
             </VerticalStackLayout>
 
-            <!-- ═══ CATEGORIES SECTION ═══ -->
+            <!-- CATEGORIES SECTION -->
             <VerticalStackLayout IsVisible="{Binding IsCategoriesSelected}" Spacing="10" Padding="16,0">
                 <CollectionView ItemsSource="{Binding CategoryBudgetLines}">
                     <CollectionView.ItemTemplate>
-                        <DataTemplate>
+                        <DataTemplate x:DataType="models:CategoryBudgetLineDisplay">
                             <Border BackgroundColor="#F8F8FC" Margin="0,0,0,8" Padding="14" StrokeShape="RoundRectangle 12" StrokeThickness="0">
                                 <VerticalStackLayout Spacing="8">
                                     <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
@@ -159,7 +166,7 @@
                                             <Image HeightRequest="16" WidthRequest="16" HorizontalOptions="Center" VerticalOptions="Center">
                                                 <Image.Source>
                                                     <FontImageSource FontFamily="MaterialIcons"
-                                                                     Glyph="{Binding Category.IconGlyph}"
+                                                                     Glyph="{Binding Category.IconKey}"
                                                                      Color="{Binding Category.ColorHex}"
                                                                      Size="16" />
                                                 </Image.Source>
@@ -180,7 +187,7 @@
                 </CollectionView>
             </VerticalStackLayout>
 
-            <!-- ═══ TRENDS SECTION ═══ -->
+            <!-- TRENDS SECTION -->
             <VerticalStackLayout IsVisible="{Binding IsTrendsSelected}" Spacing="12" Padding="16,0">
                 <Label FontAttributes="Bold" FontSize="14" Text="6-month spending trend" TextColor="#1a1a2e" />
                 <lvc:CartesianChart
@@ -194,7 +201,7 @@
                 <Label FontAttributes="Bold" FontSize="14" Text="Grocery quantity recommendations" TextColor="#1a1a2e" Margin="0,8,0,0" />
                 <CollectionView ItemsSource="{Binding QuantityRecommendations}">
                     <CollectionView.ItemTemplate>
-                        <DataTemplate>
+                        <DataTemplate x:DataType="dto:QuantityRecommendation">
                             <Grid ColumnDefinitions="*,Auto,Auto" Padding="0,8" ColumnSpacing="12">
                                 <Label Grid.Column="0" FontSize="13" Text="{Binding ProductName}" TextColor="#1a1a2e" VerticalOptions="Center" />
                                 <Label Grid.Column="1" FontSize="11" Text="{Binding AverageMonthlyQty, StringFormat='avg {0:0.0}'}" TextColor="#aaa" VerticalOptions="Center" />
@@ -216,7 +223,7 @@
 
                 <CollectionView ItemsSource="{Binding SavingsTips}">
                     <CollectionView.ItemTemplate>
-                        <DataTemplate>
+                        <DataTemplate x:DataType="models:SavingsTipDisplay">
                             <Border BackgroundColor="#F8F8FC" Margin="0,0,0,8" Padding="14" StrokeShape="RoundRectangle 12" StrokeThickness="0">
                                 <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
                                     <Border Grid.Column="0"
@@ -245,8 +252,6 @@
                     </CollectionView.ItemTemplate>
                 </CollectionView>
             </VerticalStackLayout>
-
-            <BoxView HeightRequest="100" Color="Transparent" />
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

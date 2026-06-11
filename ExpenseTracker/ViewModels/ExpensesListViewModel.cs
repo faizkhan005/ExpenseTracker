@@ -32,24 +32,24 @@ public partial class ExpensesListViewModel : ObservableObject
     public ICommand ExportCommand { get; }
 
     [ObservableProperty]
-    private partial ObservableCollection<CategoryFilterItem> CategoryFilters { get; set; } = [];
+    public partial ObservableCollection<CategoryFilterItem> CategoryFilters { get; set; } = [];
 
     [ObservableProperty]
-    private partial ObservableCollection<ExpenseDayGroup> GroupedExpenses { get; set; } = [];
+    public partial ObservableCollection<ExpenseDayGroup> GroupedExpenses { get; set; } = [];
 
     [ObservableProperty]
-    private partial string SearchQuery { get; set; } = string.Empty;
+    public partial string SearchQuery { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private partial decimal MonthTotal { get; set; }
+    public partial decimal MonthTotal { get; set; }
 
     [ObservableProperty]
-    private partial int TransactionCount { get; set; }
+    public partial int TransactionCount { get; set; }
 
     [ObservableProperty]
-    private partial decimal AvgPerDay { get; set; }
+    public partial decimal AvgPerDay { get; set; }
 
-    private bool HasSearchQuery => !string.IsNullOrEmpty(SearchQuery);
+    public bool HasSearchQuery => !string.IsNullOrEmpty(SearchQuery);
 
     partial void OnSearchQueryChanged(string value) => _ = FilterExpensesAsync();
 
