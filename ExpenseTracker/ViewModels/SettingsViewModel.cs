@@ -41,22 +41,22 @@ public partial class SettingsViewModel : ObservableObject
 
     // Observable z
     [ObservableProperty]
-    private partial string MonthlyBudgetText { get; set; } = string.Empty;
+    public partial string MonthlyBudgetText { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private partial string SavingsGoalText { get; set; } = string.Empty;
+    public partial string SavingsGoalText { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private partial bool IsSmsParsingEnabled { get; set; } = true;
+    public partial bool IsSmsParsingEnabled { get; set; } = true;
 
     [ObservableProperty]
-    private partial bool IsLocationPromptsEnabled { get; set; } = true;
+    public partial bool IsLocationPromptsEnabled { get; set; } = true;
 
     [ObservableProperty]
-    private partial string RecurringCountLabel { get; set; } = "0 active rules";
+    public partial string RecurringCountLabel { get; set; } = "0 active rules";
 
     [ObservableProperty]
-    private partial ObservableCollection<CategorySelectItem> Categories { get; set; } = [];
+    public partial ObservableCollection<CategorySelectItem> Categories { get; set; } = [];
 
     public async Task LoadDataAsync()
     {

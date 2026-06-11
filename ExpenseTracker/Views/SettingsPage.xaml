@@ -1,28 +1,33 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage
-    x:Class="ExpenseTracker.Views.SettingsPage"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:vm="clr-namespace:ExpenseTracker.ViewModels"
-    Shell.NavBarIsVisible="False">
+<ContentPage x:Class="ExpenseTracker.Views.SettingsPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:ExpenseTracker.ViewModels"
+             xmlns:models="clr-namespace:ExpenseTracker.Models"
+             xmlns:converters="clr-namespace:ExpenseTracker.Converters"
+             x:DataType="vm:SettingsViewModel"
+             Shell.NavBarIsVisible="False">
 
     <ContentPage.Resources>
         <ResourceDictionary>
             <Color x:Key="PrimaryPurple">#534AB7</Color>
             <Color x:Key="DangerRed">#E24B4A</Color>
         </ResourceDictionary>
+        <ResourceDictionary>
+            <converters:InverseBoolConverter     x:Key="InverseBoolConverter" />
+        </ResourceDictionary>
     </ContentPage.Resources>
 
     <ScrollView>
         <VerticalStackLayout Spacing="0">
 
-            <!-- ═══ TOP BAR ═══ -->
+            <!-- TOP BAR -->
             <VerticalStackLayout Padding="16,52,16,24" Spacing="4">
                 <Label FontAttributes="Bold" FontSize="22" Text="Settings" TextColor="#1a1a2e" />
                 <Label FontSize="12" Text="Manage your budget, categories and automation" TextColor="#888" />
             </VerticalStackLayout>
 
-            <!-- ═══ SECTION: BUDGET ═══ -->
+            <!-- SECTION: BUDGET -->
             <Label Padding="16,0,16,8" FontAttributes="Bold" FontSize="11" Text="BUDGET" TextColor="#aaa" CharacterSpacing="1" />
             <Border BackgroundColor="#F8F8FC" Margin="16,0,16,20" StrokeShape="RoundRectangle 14" StrokeThickness="0">
                 <VerticalStackLayout>
@@ -96,7 +101,7 @@
                 </VerticalStackLayout>
             </Border>
 
-            <!-- ═══ SECTION: AUTOMATION ═══ -->
+            <!-- SECTION: AUTOMATION -->
             <Label Padding="16,0,16,8" FontAttributes="Bold" FontSize="11" Text="AUTOMATION" TextColor="#aaa" CharacterSpacing="1" />
             <Border BackgroundColor="#F8F8FC" Margin="16,0,16,20" StrokeShape="RoundRectangle 14" StrokeThickness="0">
                 <VerticalStackLayout>
@@ -162,13 +167,13 @@
                 </VerticalStackLayout>
             </Border>
 
-            <!-- ═══ SECTION: CATEGORIES ═══ -->
+            <!-- SECTION: CATEGORIES -->
             <Label Padding="16,0,16,8" FontAttributes="Bold" FontSize="11" Text="CATEGORIES" TextColor="#aaa" CharacterSpacing="1" />
             <Border BackgroundColor="#F8F8FC" Margin="16,0,16,20" StrokeShape="RoundRectangle 14" StrokeThickness="0">
                 <VerticalStackLayout>
                     <CollectionView ItemsSource="{Binding Categories}">
                         <CollectionView.ItemTemplate>
-                            <DataTemplate>
+                            <DataTemplate x:DataType="models:CategorySelectItem">
                                 <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,12" ColumnSpacing="12">
                                     <Border Grid.Column="0" BackgroundColor="{Binding BackgroundHex}" HeightRequest="34" WidthRequest="34" StrokeShape="RoundRectangle 8" StrokeThickness="0">
                                         <Image HeightRequest="16" WidthRequest="16" HorizontalOptions="Center" VerticalOptions="Center">
@@ -212,7 +217,7 @@
                 </VerticalStackLayout>
             </Border>
 
-            <!-- ═══ SECTION: DATA ═══ -->
+            <!-- SECTION: DATA -->
             <Label Padding="16,0,16,8" FontAttributes="Bold" FontSize="11" Text="DATA" TextColor="#aaa" CharacterSpacing="1" />
             <Border BackgroundColor="#F8F8FC" Margin="16,0,16,20" StrokeShape="RoundRectangle 14" StrokeThickness="0">
                 <VerticalStackLayout>
@@ -259,8 +264,6 @@
                     </Grid>
                 </VerticalStackLayout>
             </Border>
-
-            <BoxView HeightRequest="100" Color="Transparent" />
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

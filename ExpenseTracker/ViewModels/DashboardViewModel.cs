@@ -9,6 +9,7 @@ using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using SkiaSharp;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Windows.Input;
 
 namespace ExpenseTracker.ViewModels;
@@ -36,49 +37,55 @@ public partial class DashboardViewModel : ObservableObject
 
     // Observable properties
     [ObservableProperty]
-    private partial string GreetingName { get; set; } = string.Empty;
+    public partial string GreetingName { get; set; } = string.Empty;
 
     [ObservableProperty]
-    private partial bool HasNotifications { get; set; } = false;
+    public partial bool HasNotifications { get; set; } = false;
 
     [ObservableProperty]
-    private partial decimal TotalSpent { get; set; }
+    public partial decimal TotalSpent { get; set; }
 
     [ObservableProperty]
-    private partial decimal BudgetLimit { get; set; }
+    public partial decimal BudgetLimit { get; set; }
 
     [ObservableProperty]
-    private partial decimal SavedThisMonth { get; set; }
+    public partial decimal SavedThisMonth { get; set; }
 
     [ObservableProperty]
-    private partial decimal AvgDailySpend { get; set; }
+    public partial decimal AvgDailySpend { get; set; }
 
     [ObservableProperty]
-    private partial int DaysLeft { get; set; }
+    public partial int DaysLeft { get; set; }
 
     [ObservableProperty]
-    private partial double SavingsChangePercent { get; set; }
+    public partial double SavingsChangePercent { get; set; }
 
     [ObservableProperty]
-    private partial double DailySpendChangePercent { get; set; }
+    public partial double DailySpendChangePercent { get; set; }
 
     [ObservableProperty]
-    private partial bool IsOverBudgetWarningVisible { get; set; }
+    public partial bool IsOverBudgetWarningVisible { get; set; }
 
     [ObservableProperty]
-    private partial bool IsLoading { get; set; }
+    public partial bool IsLoading { get; set; }
 
     [ObservableProperty]
-    private partial ObservableCollection<TransactionDisplayItem> RecentTransactions { get; set; } = [];
+    public partial ObservableCollection<TransactionDisplayItem> RecentTransactions { get; set; } = [];
 
     [ObservableProperty]
-    private partial ObservableCollection<CategoryLegendItem> CategoryBreakdown { get; set; } = [];
+    public partial ObservableCollection<CategoryLegendItem> CategoryBreakdown { get; set; } = [];
+
+    // LiveCharts2
+    [ObservableProperty]
+    public partial ISeries[] WeeklySeries { get; private set; } = [];
+    [ObservableProperty]
+    public partial ISeries[] CategorySeries { get; private set; } = [];
 
     // Computed display strings
-    public string TotalSpentFormatted => TotalSpent.ToString("C0");
-    public string BudgetLimitFormatted => BudgetLimit.ToString("C0");
-    public string SavedThisMonthFormatted => SavedThisMonth.ToString("C0");
-    public string AvgDailySpendFormatted => AvgDailySpend.ToString("C0");
+    public string TotalSpentFormatted => TotalSpent.ToString("C0", CultureInfo.CreateSpecificCulture("en-US"));
+    public string BudgetLimitFormatted => BudgetLimit.ToString("C0", CultureInfo.CreateSpecificCulture("en-US"));
+    public string SavedThisMonthFormatted => SavedThisMonth.ToString("C0", CultureInfo.CreateSpecificCulture("en-US"));
+    public string AvgDailySpendFormatted => AvgDailySpend.ToString("C0", CultureInfo.CreateSpecificCulture("en-US"));
 
     public double BudgetProgress => BudgetLimit == 0
         ? 0
@@ -111,27 +118,25 @@ public partial class DashboardViewModel : ObservableObject
     public string OverBudgetMessage =>
         $"You are on track to exceed your budget by {(TotalSpent - BudgetLimit):C0}. Tap for tips.";
 
-    // LiveCharts2
-    public ISeries[] WeeklySeries { get; private set; } = Array.Empty<ISeries>();
-    public ISeries[] CategorySeries { get; private set; } = Array.Empty<ISeries>();
+    
 
     public Axis[] WeeklyXAxes { get; private set; } =
-    {
+    [
         new Axis
         {
-            Labels          = new[] { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" },
+            Labels          = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
             LabelsPaint     = new SolidColorPaint(SKColors.Gray),
             TextSize        = 10,
             SeparatorsPaint = null
         }
-    };
+    ];
 
     public Axis[] WeeklyYAxes { get; private set; } =
-    {
+    [
         new Axis { IsVisible = false, SeparatorsPaint = null }
-    };
+    ];
 
-    // ─── Main data load ───────────────────────────────────────────────────────
+    // Main data load 
     public async Task LoadDataAsync()
     {
         IsLoading = true;
@@ -222,8 +227,8 @@ public partial class DashboardViewModel : ObservableObject
             })
             .ToArray();
 
-        WeeklySeries = new ISeries[]
-        {
+        WeeklySeries =
+        [
             new ColumnSeries<double>
             {
                 Values          = dailyTotals,
@@ -233,7 +238,7 @@ public partial class DashboardViewModel : ObservableObject
                 Ry              = 4,
                 DataLabelsPaint = null
             }
-        };
+        ];
 
         OnPropertyChanged(nameof(WeeklySeries));
     }
@@ -267,15 +272,14 @@ public partial class DashboardViewModel : ObservableObject
 
         var grandTotal = grouped.Sum(g => g.Total);
 
-        CategorySeries = grouped
+        CategorySeries = [.. grouped
             .Select(g => (ISeries)new PieSeries<double>
             {
-                Values = new[] { (double)g.Total },
+                Values = [(double)g.Total],
                 Fill = new SolidColorPaint(SKColor.Parse(g.Color)),
                 MaxRadialColumnWidth = 18,
                 Name = g.Name
-            })
-            .ToArray();
+            })];
 
         CategoryBreakdown = new ObservableCollection<CategoryLegendItem>(
             grouped.Select(g => new CategoryLegendItem

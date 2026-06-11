@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage
-    x:Class="ExpenseTracker.Views.ExpensesListPage"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-    xmlns:vm="clr-namespace:ExpenseTracker.ViewModels"
-    Shell.NavBarIsVisible="False">
+<ContentPage x:Class="ExpenseTracker.Views.ExpensesListPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:vm="clr-namespace:ExpenseTracker.ViewModels"
+             xmlns:models="clr-namespace:ExpenseTracker.Models"
+             xmlns:converters="clr-namespace:ExpenseTracker.Converters"
+             x:DataType="vm:ExpensesListViewModel"
+             Shell.NavBarIsVisible="False">
 
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -13,11 +15,17 @@
             <Color x:Key="DangerRed">#E24B4A</Color>
             <Color x:Key="SuccessGreen">#1D9E75</Color>
         </ResourceDictionary>
+        <ResourceDictionary>
+            <converters:PillBgConverter     x:Key="PillBgConverter" />
+            <converters:PillFontConverter   x:Key="PillFontConverter" />
+            <converters:PillStrokeConverter x:Key="PillStrokeConverter"/>
+            <converters:PillTextConverter   x:Key="PillTextConverter"/>
+        </ResourceDictionary>
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="Auto,Auto,Auto,*">
+    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
 
-        <!-- ═══ TOP BAR ═══ -->
+        <!-- TOP BAR -->
         <Grid
             Grid.Row="0"
             Padding="16,52,16,12"
@@ -68,7 +76,7 @@
             </Border>
         </Grid>
 
-        <!-- ═══ SEARCH BAR ═══ -->
+        <!-- SEARCH BAR -->
         <Border
             Grid.Row="1"
             BackgroundColor="#F5F5FA"
@@ -104,14 +112,14 @@
             </Grid>
         </Border>
 
-        <!-- ═══ CATEGORY FILTER PILLS ═══ -->
+        <!-- CATEGORY FILTER PILLS -->
         <ScrollView Grid.Row="2" Orientation="Horizontal" HorizontalScrollBarVisibility="Never" Margin="0,0,0,8">
             <HorizontalStackLayout Padding="16,0" Spacing="8">
                 <BindableLayout.ItemsSource>
                     <Binding Path="CategoryFilters" />
                 </BindableLayout.ItemsSource>
                 <BindableLayout.ItemTemplate>
-                    <DataTemplate>
+                    <DataTemplate x:DataType="models:CategoryFilterItem">
                         <Border
                             Padding="14,7"
                             StrokeShape="RoundRectangle 20"
@@ -132,7 +140,7 @@
             </HorizontalStackLayout>
         </ScrollView>
 
-        <!-- ═══ GROUPED TRANSACTION LIST ═══ -->
+        <!-- GROUPED TRANSACTION LIST -->
         <CollectionView
             Grid.Row="3"
             ItemsSource="{Binding GroupedExpenses}"
@@ -142,7 +150,7 @@
 
             <!-- Group header -->
             <CollectionView.GroupHeaderTemplate>
-                <DataTemplate>
+                <DataTemplate x:DataType="models:ExpenseDayGroup">
                     <Grid ColumnDefinitions="*,Auto" Padding="16,12,16,4">
                         <Label
                             Grid.Column="0"
@@ -162,7 +170,7 @@
 
             <!-- Transaction row -->
             <CollectionView.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate x:DataType="models:ExpenseDisplayItem">
                     <Grid
                         ColumnDefinitions="Auto,*,Auto"
                         ColumnSpacing="12"
@@ -222,7 +230,7 @@
 
             <!-- Empty state -->
             <CollectionView.EmptyView>
-                <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="12" Padding="40">
+                <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Fill" Spacing="12" Padding="40">
                     <Image HeightRequest="64" WidthRequest="64" HorizontalOptions="Center" Opacity="0.4">
                         <Image.Source>
                             <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe876;" Color="#aaa" Size="64" />
@@ -232,31 +240,28 @@
                     <Label Text="Try a different filter or add a new expense" FontSize="12" TextColor="#bbb" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
                 </VerticalStackLayout>
             </CollectionView.EmptyView>
-
-            <!-- Footer summary card -->
-            <CollectionView.Footer>
-                <Border
-                    Margin="16,8,16,100"
-                    Padding="16"
-                    BackgroundColor="#F8F8FC"
-                    StrokeShape="RoundRectangle 12"
-                    StrokeThickness="0">
-                    <Grid ColumnDefinitions="*,*,*">
-                        <VerticalStackLayout Grid.Column="0" Spacing="4">
-                            <Label FontSize="10" Text="Total spent" TextColor="#888" />
-                            <Label FontAttributes="Bold" FontSize="15" Text="{Binding MonthTotal, StringFormat='{0:C}'}" TextColor="#E24B4A" />
-                        </VerticalStackLayout>
-                        <VerticalStackLayout Grid.Column="1" Spacing="4" HorizontalOptions="Center">
-                            <Label FontSize="10" Text="Transactions" TextColor="#888" />
-                            <Label FontAttributes="Bold" FontSize="15" Text="{Binding TransactionCount}" TextColor="#1a1a2e" />
-                        </VerticalStackLayout>
-                        <VerticalStackLayout Grid.Column="2" Spacing="4" HorizontalOptions="End">
-                            <Label FontSize="10" Text="Avg per day" TextColor="#888" />
-                            <Label FontAttributes="Bold" FontSize="15" Text="{Binding AvgPerDay, StringFormat='{0:C}'}" TextColor="#1a1a2e" />
-                        </VerticalStackLayout>
-                    </Grid>
-                </Border>
-            </CollectionView.Footer>
         </CollectionView>
+        <Border Grid.Row="4"
+                Margin="0,5"
+                Padding="16"
+                VerticalOptions="End"
+                BackgroundColor="#F8F8FC"
+                StrokeShape="RoundRectangle 12"
+                StrokeThickness="0">
+            <Grid ColumnDefinitions="*,*,*">
+                <VerticalStackLayout Grid.Column="0" Spacing="4">
+                    <Label FontSize="10" Text="Total spent" TextColor="#888" />
+                    <Label FontAttributes="Bold" FontSize="15" Text="{Binding MonthTotal, StringFormat='{0:C}'}" TextColor="#E24B4A" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="1" Spacing="4" HorizontalOptions="Center">
+                    <Label FontSize="10" Text="Transactions" TextColor="#888" />
+                    <Label FontAttributes="Bold" FontSize="15" Text="{Binding TransactionCount}" TextColor="#1a1a2e" />
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="2" Spacing="4" HorizontalOptions="End">
+                    <Label FontSize="10" Text="Avg per day" TextColor="#888" />
+                    <Label FontAttributes="Bold" FontSize="15" Text="{Binding AvgPerDay, StringFormat='{0:C}'}" TextColor="#1a1a2e" />
+                </VerticalStackLayout>
+            </Grid>
+        </Border>
     </Grid>
 </ContentPage>

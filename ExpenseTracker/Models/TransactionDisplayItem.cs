@@ -40,15 +40,15 @@ public class TransactionDisplayItem
         // Map Category.Name to icon asset name and colors
         (IconName, IconBackground, IconColor) = expense.Category?.Name switch
         {
-            "Food" => ("icon_cart.png", Color.FromArgb("#EAF3DE"), Color.FromArgb("#3B6D11")),
-            "Transport" => ("icon_car.png", Color.FromArgb("#E6F1FB"), Color.FromArgb("#185FA5")),
-            "Dining" => ("icon_fork.png", Color.FromArgb("#FAEEDA"), Color.FromArgb("#633806")),
-            "Housing" => ("icon_home.png", Color.FromArgb("#FAECE7"), Color.FromArgb("#712B13")),
-            "Health" => ("icon_health.png", Color.FromArgb("#E1F5EE"), Color.FromArgb("#0F6E56")),
-            "Subscriptions" => ("icon_phone.png", Color.FromArgb("#EEEDFE"), Color.FromArgb("#534AB7")),
-            "Shopping" => ("icon_bag.png", Color.FromArgb("#FBEAF0"), Color.FromArgb("#72243E")),
-            "Income" => ("icon_bank.png", Color.FromArgb("#E1F5EE"), Color.FromArgb("#0F6E56")),
-            _ => ("icon_other.png", Color.FromArgb("#F1EFE8"), Color.FromArgb("#5F5E5A")),
+            "Food" => ("\ue2e7", Color.FromArgb("#EAF3DE"), Color.FromArgb("#3B6D11")),
+            "Transport" => ("\ue531", Color.FromArgb("#E6F1FB"), Color.FromArgb("#185FA5")),
+            "Housing" => ("\ue88a", Color.FromArgb("#FAECE7"), Color.FromArgb("#712B13")),
+            "Dining" => ("\ue56c", Color.FromArgb("#FAEEDA"), Color.FromArgb("#633806")),
+            "Health" => ("\ue548", Color.FromArgb("#E1F5EE"), Color.FromArgb("#0F6E56")),
+            "Subscriptions" => ("\ue325", Color.FromArgb("#EEEDFE"), Color.FromArgb("#534AB7")),
+            "Shopping" => ("\ue8cc", Color.FromArgb("#FBEAF0"), Color.FromArgb("#72243E")),
+            "Income" => ("\ue227", Color.FromArgb("#E1F5EE"), Color.FromArgb("#0F6E56")),
+            _ => ("\ue5d3", Color.FromArgb("#F1EFE8"), Color.FromArgb("#5F5E5A")),
         };
     }
 }
