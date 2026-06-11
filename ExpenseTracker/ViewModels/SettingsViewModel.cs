@@ -5,23 +5,29 @@ using ExpenseTracker.Domain.Entities;
 using ExpenseTracker.Models;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using static ExpenseTracker.ViewModels.AddExpenseViewModel;
 
 namespace ExpenseTracker.ViewModels;
+
 public partial class SettingsViewModel : ObservableObject
 {
     private readonly IBudgetService _budgetService;
     private readonly ICategoryService _categoryService;
     private readonly IRecurringExpenseService _recurringService;
+    private readonly IExportService _exportService;
+    private readonly IDeleteDBRepository _deleteDBRepository;
 
     public SettingsViewModel(
         IBudgetService budgetService,
         ICategoryService categoryService,
-        IRecurringExpenseService recurringService)
+        IRecurringExpenseService recurringService,
+        IExportService exportService,
+        IDeleteDBRepository deleteDBRepository)
     {
         _budgetService = budgetService;
         _categoryService = categoryService;
         _recurringService = recurringService;
+        _exportService = exportService;
+        _deleteDBRepository = deleteDBRepository;
 
         SaveBudgetCommand = new AsyncRelayCommand(SaveBudgetAsync);
         ManageRecurringCommand = new AsyncRelayCommand(ManageRecurringAsync);
@@ -101,11 +107,74 @@ public partial class SettingsViewModel : ObservableObject
         await LoadDataAsync();
     }
 
-    private Task ExportCsvAsync() => Task.CompletedTask; // Wire to export service
+    private async Task ExportCsvAsync() 
+    {
+        try
+        {
+            var now = DateTime.Now;
+
+            // Ask user — this month or all time
+            var choice = await Shell.Current.DisplayActionSheetAsync(
+                "Export expenses",
+                "Cancel",
+                null,
+                $"This month ({now:MMMM yyyy})",
+                "All time");
+
+            if (choice == "Cancel" || choice is null) return;
+
+            string csv = choice.StartsWith("This month")
+                ? await _exportService.ExportToCsvAsync(now.Year, now.Month)
+                : await _exportService.ExportAllToCsvAsync();
+
+            // Write to a temp file
+            var fileName = choice.StartsWith("This month")
+                ? $"expenses_{now:yyyy_MM}.csv"
+                : "expenses_all.csv";
+
+            var filePath = Path.Combine(FileSystem.CacheDirectory, fileName);
+            await File.WriteAllTextAsync(filePath, csv);
+
+            // Share via native share sheet
+            await Share.RequestAsync(new ShareFileRequest
+            {
+                Title = "Export expenses",
+                File = new ShareFile(filePath)
+            });
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlertAsync("Export failed", ex.Message, "OK");
+        }
+    }
     private async Task ClearDataAsync()
     {
-        var confirm = await Shell.Current.DisplayAlertAsync("Clear data", "This will permanently delete all expenses. Are you sure?", "Delete all", "Cancel");
-        if (!confirm) return;
-        // Wire to a clear-data service
+        var confirm1 = await Shell.Current.DisplayAlertAsync(
+        "Clear all data",
+        "This will permanently delete ALL your expenses, budgets and categories. This cannot be undone.",
+        "Continue",
+        "Cancel");
+
+        if (!confirm1) return;
+
+        var confirm2 = await Shell.Current.DisplayAlertAsync(
+            "Are you absolutely sure?",
+            "All expense history will be lost forever.",
+            "Delete everything",
+            "Cancel");
+
+        if (!confirm2) return;
+
+        try
+        {
+            await _deleteDBRepository.ClearAllDataAsync();
+
+            await Shell.Current.DisplayAlertAsync("Done", "All data has been cleared.", "OK");
+            await LoadDataAsync();
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlertAsync("Error", ex.Message, "OK");
+        }
     }
 }
