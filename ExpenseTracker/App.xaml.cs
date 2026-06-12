@@ -1,4 +1,6 @@
 ﻿using ExpenseTracker.Application.Interfaces;
+using ExpenseTracker.Application.Services;
+using ExpenseTracker.Infrastructure.Data;
 
 namespace ExpenseTracker
 {
@@ -21,22 +23,16 @@ namespace ExpenseTracker
             base.OnStart();
             try
             {
-                // Ensure AppDbContext is fully initialized before proceeding
-                var dbContext = Service?.GetService<ExpenseTracker.Infrastructure.Data.AppDbContext>()
+                var dbContext = Service?.GetService<AppDbContext>()
                     ?? throw new InvalidOperationException("AppDbContext not found");
-
-                // This call ensures the connection and all tables are created
                 await dbContext.GetConnectionAsync();
 
-                System.Diagnostics.Debug.WriteLine("✓ AppDbContext initialized successfully");
+                await ModelDeployment.EnsureModelDeployedAsync();
 
-                // NOW safely process recurring expenses
                 var recurring = Service?.GetService<IRecurringExpenseService>()
                     ?? throw new InvalidOperationException("Recurring expense service not found");
 
                 await recurring.ProcessDueRecurringExpensesAsync();
-
-                System.Diagnostics.Debug.WriteLine("✓ Recurring expenses processed successfully");
             }
             catch (Exception ex)
             {

@@ -9,6 +9,7 @@ using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Maui;
 using Microsoft.Extensions.Logging;
+using Plugin.Maui.OCR;
 using SkiaSharp.Views.Maui.Controls.Hosting;
 
 namespace ExpenseTracker
@@ -23,6 +24,7 @@ namespace ExpenseTracker
                 .UseMauiCommunityToolkit()
                 .UseLiveCharts()
                 .UseSkiaSharp()
+                .UseOcr()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -44,6 +46,8 @@ namespace ExpenseTracker
             builder.Services.AddSingleton<IRecurringExpenseRepository, RecurringExpenseRepository>();
             builder.Services.AddSingleton<ISmsRuleRepository, SmsRuleRepository>();
             builder.Services.AddSingleton<ISavedLocationRepository, SavedLocationRepository>();
+            builder.Services.AddSingleton<IDeleteDBRepository, DeleteDBRepository>();
+            builder.Services.AddSingleton<IFeedbackRepository, FeedbackRepository>();
 
             //Application — Services
             builder.Services.AddSingleton<IExpenseService, ExpenseService>();
@@ -51,19 +55,31 @@ namespace ExpenseTracker
             builder.Services.AddSingleton<IRecurringExpenseService, RecurringExpenseService>();
             builder.Services.AddSingleton<ICategoryService, CategoryService>();
             builder.Services.AddSingleton<IIntelligenceService, IntelligenceService>();
+            builder.Services.AddSingleton<IExportService, ExportService>();
+            builder.Services.AddSingleton<IReceiptLineClassifier, RuleBasedReceiptClassifier>();
+            builder.Services.AddSingleton<Application.Interfaces.IOcrService,GoogleMlKitOcrService>();
+            // Once you have a trained model, swap to:
+            // builder.Services.AddSingleton<IReceiptLineClassifier, MlNetReceiptClassifier>();
 
-            builder.Services.AddTransient<DashboardViewModel>();
+            //ViewModels
             builder.Services.AddTransient<AddExpenseViewModel>();
+            builder.Services.AddTransient<DashboardViewModel>();
             builder.Services.AddTransient<ExpensesListViewModel>();
             builder.Services.AddTransient<InsightsViewModel>();
+            builder.Services.AddTransient<NotificationsViewModel>();
             builder.Services.AddTransient<SettingsViewModel>();
-            builder.Services.AddTransient<Dashboard>();
+
+            //Views
             builder.Services.AddTransient<AddExpensePage>();
+            builder.Services.AddTransient<Dashboard>();
             builder.Services.AddTransient<ExpensesListPage>();
             builder.Services.AddTransient<InsightsPage>();
+            builder.Services.AddTransient<NotificationsPage>();
             builder.Services.AddTransient<SettingsPage>();
 
+            //Routes
             Routing.RegisterRoute("AddExpensePage", typeof(AddExpensePage));
+            Routing.RegisterRoute("NotificationsPage", typeof(Views.NotificationsPage));
 
 #if DEBUG
             builder.Logging.AddDebug();

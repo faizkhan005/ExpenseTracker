@@ -12,11 +12,15 @@ public partial class ExpensesListViewModel : ObservableObject
 {
     private readonly IExpenseService _expenseService;
     private readonly ICategoryService _categoryService;
+    private readonly IExportService _exportService;
 
-    public ExpensesListViewModel(IExpenseService expenseService, ICategoryService categoryService)
+    public ExpensesListViewModel(IExpenseService expenseService,
+        ICategoryService categoryService,
+        IExportService exportService)
     {
         _expenseService = expenseService;
         _categoryService = categoryService;
+        _exportService = exportService;
 
         SelectFilterCommand = new AsyncRelayCommand<CategoryFilterItem>(SelectFilterAsync);
         OpenExpenseCommand = new AsyncRelayCommand<ExpenseDisplayItem>(OpenExpenseAsync);
@@ -114,6 +118,25 @@ public partial class ExpensesListViewModel : ObservableObject
     }
 
     private Task LoadMoreAsync() => Task.CompletedTask; // Pagination hook
-    private Task ExportAsync() => Task.CompletedTask; // Wire to export service
+    private async Task ExportAsync()
+    {
+        try
+        {
+            var now = DateTime.Now;
+            var csv = await _exportService.ExportToCsvAsync(now.Year, now.Month);
+            var path = Path.Combine(FileSystem.CacheDirectory, $"expenses_{now:yyyy_MM}.csv");
+            await File.WriteAllTextAsync(path, csv);
+
+            await Share.RequestAsync(new ShareFileRequest
+            {
+                Title = $"Expenses {now:MMMM yyyy}",
+                File = new ShareFile(path)
+            });
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlertAsync("Export failed", ex.Message, "OK");
+        }
+    }
 
 }

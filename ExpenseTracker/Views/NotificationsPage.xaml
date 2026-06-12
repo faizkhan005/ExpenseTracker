@@ -3,8 +3,15 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="ExpenseTracker.Views.NotificationsPage"
              xmlns:vm="clr-namespace:ExpenseTracker.ViewModels"
+             xmlns:models="clr-namespace:ExpenseTracker.Models"
+             xmlns:conv="clr-namespace:ExpenseTracker.Converters"
              x:DataType="vm:NotificationsViewModel"
              Shell.NavBarIsVisible="False">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <conv:NotifBgConverter x:Key="NotifBgConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
     <Grid RowDefinitions="Auto,*">
 
         <!-- Top bar -->
@@ -36,7 +43,7 @@
         <!-- Notification list -->
         <CollectionView Grid.Row="1" ItemsSource="{Binding Notifications}">
             <CollectionView.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate x:DataType="models:NotificationItem">
                     <Border
                         BackgroundColor="{Binding IsRead, Converter={StaticResource NotifBgConverter}}"
                         Margin="16,0,16,8"

@@ -113,6 +113,9 @@
                                 VerticalOptions="Start"
                                 WidthRequest="8" />
                         </Grid>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding OpenNotificationsCommand}" />
+                        </Border.GestureRecognizers>
                     </Border>
                 </Grid>
 

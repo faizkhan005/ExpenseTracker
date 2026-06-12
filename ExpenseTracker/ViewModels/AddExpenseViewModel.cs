@@ -13,11 +13,15 @@ public partial class AddExpenseViewModel : ObservableObject
 {
     private readonly IExpenseService _expenseService;
     private readonly ICategoryService _categoryService;
+    private readonly IOcrService _ocrService;
 
-    public AddExpenseViewModel(IExpenseService expenseService, ICategoryService categoryService)
+    public AddExpenseViewModel(IExpenseService expenseService,
+        ICategoryService categoryService,
+        IOcrService ocrService)
     {
         _expenseService = expenseService;
         _categoryService = categoryService;
+        _ocrService = ocrService;
 
         SaveCommand = new AsyncRelayCommand(SaveAsync);
         CancelCommand = new AsyncRelayCommand(CancelAsync);
@@ -74,10 +78,16 @@ public partial class AddExpenseViewModel : ObservableObject
     public partial DateTime SelectedDate { get; set; } = DateTime.Today;
 
     [ObservableProperty]
-    public partial List<ImageSource> ReceiptImageSource { get; set; } = [];
+    public partial ImageSource? ReceiptImageSource { get; set; }
 
     [ObservableProperty]
     public partial ObservableCollection<CategorySelectItem> Categories { get; set; } = [];
+
+    [ObservableProperty]
+    public partial bool IsProcessingReceipt { get; set; }
+
+    private List<LineItem> _scannedLineItems = [];
+
     public List<string> FrequencyOptions { get; } = ["Daily", "Weekly", "Monthly", "Yearly"];
 
     public string PageTitle => EditingExpenseId > 0 ? "Edit expense" : "Add expense";
@@ -168,7 +178,7 @@ public partial class AddExpenseViewModel : ObservableObject
         if (EditingExpenseId > 0)
             await _expenseService.UpdateExpenseAsync(expense);
         else
-            await _expenseService.AddExpenseAsync(expense);
+            await _expenseService.AddExpenseAsync(expense, _scannedLineItems);
 
         await Shell.Current.GoToAsync("//Dashboard");
     }
@@ -177,14 +187,123 @@ public partial class AddExpenseViewModel : ObservableObject
 
     private async Task AttachReceiptAsync()
     {
-        List<FileResult> result = await MediaPicker.PickPhotosAsync();
-        if (result is null) return;
-        foreach (var photo in result)
+        // Ask user which source they want
+        var action = await Shell.Current.DisplayActionSheetAsync(
+            "Add receipt",
+            "Cancel",
+            null,
+            "Take a photo",
+            "Choose from gallery");
+
+        if (action == "Cancel" || action is null) return;
+
+        FileResult? result = null;
+
+        try
         {
-            ReceiptImageSource.Add(ImageSource.FromFile(photo.FullPath));
+            if (action == "Take a photo")
+            {
+                var status = await Permissions.RequestAsync<Permissions.Camera>();
+                if (status != PermissionStatus.Granted)
+                {
+                    await Shell.Current.DisplayAlert(
+                        "Permission needed",
+                        "Camera permission is required to take a photo.",
+                        "OK");
+                    return;
+                }
+
+                if (!MediaPicker.Default.IsCaptureSupported)
+                {
+                    await Shell.Current.DisplayAlert(
+                        "Not supported",
+                        "Camera capture is not supported on this device.",
+                        "OK");
+                    return;
+                }
+
+                // Singular — captures ONE photo. Not deprecated.
+                result = await MediaPicker.Default.CapturePhotoAsync(new MediaPickerOptions
+                {
+                    Title = "Take a receipt photo"
+                });
+            }
+            else
+            {
+                // Singular — picks ONE photo. Not deprecated.
+                // (PickPhotosAsync — plural — is for multi-select and returns List<FileResult>,
+                //  which is a different API for a different use case, not a replacement.)
+                result = await MediaPicker.Default.PickPhotoAsync(new MediaPickerOptions
+                {
+                    Title = "Choose a receipt photo"
+                });
+            }
         }
+        catch (FeatureNotSupportedException)
+        {
+            await Shell.Current.DisplayAlertAsync("Not supported",
+                "This feature is not supported on your device.", "OK");
+            return;
+        }
+        catch (PermissionException)
+        {
+            await Shell.Current.DisplayAlertAsync("Permission denied",
+                "Please grant camera and photo permissions in Settings.", "OK");
+            return;
+        }
+
+        if (result is null) return;
+
+        // Show image preview immediately
+        ReceiptImageSource = ImageSource.FromFile(result.FullPath);
         HasReceiptImage = true;
-        // TODO: pass image stream to IOcrService and populate amount/description
+        IsProcessingReceipt = true;
+
+        try
+        {
+            // Pass to OCR service
+            using var stream = await result.OpenReadAsync();
+            var ocrResult = await _ocrService.ScanReceiptAsync(stream);
+
+            if (ocrResult.IsSuccessful)
+            {
+                // Auto-fill amount if detected
+                if (ocrResult.Total > 0)
+                    AmountText = ocrResult.Total.ToString("0.00");
+
+                // Auto-fill description from merchant name
+                if (!string.IsNullOrWhiteSpace(ocrResult.MerchantName))
+                    Description = ocrResult.MerchantName;
+
+                // Store line items
+                _scannedLineItems = ocrResult.LineItems;
+
+                if (ocrResult.LineItems.Count > 0)
+                    await Shell.Current.DisplayAlertAsync(
+                        "Receipt scanned",
+                        $"Found {ocrResult.LineItems.Count} items totalling {ocrResult.Total:C}. Amount has been filled in.",
+                        "OK");
+            }
+            else
+            {
+                await Shell.Current.DisplayAlertAsync(
+                    "Could not read receipt",
+                    "Please enter the amount manually.",
+                    "OK");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"OCR error: {ex.Message}");
+            await Shell.Current.DisplayAlertAsync(
+                "Scan failed",
+                "Could not process the receipt. Please enter the amount manually.",
+                "OK");
+        }
+        finally
+        {
+            IsProcessingReceipt = false;
+        }
     }
 
 }
