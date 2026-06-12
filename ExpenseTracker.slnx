@@ -5,4 +5,5 @@
   <Project Path="ExpenseTracker/ExpenseTracker.csproj">
     <Deploy Solution="Debug|*" />
   </Project>
+  <Project Path="ReceiptModelTrainer/ReceiptModelTrainer.csproj" Id="67980316-19f1-4ef3-9571-f96be6150597" />
 </Solution>

@@ -282,7 +282,7 @@
                 StrokeDashArray="6,4"
                 StrokeThickness="1"
                 Stroke="#DDDDE8">
-                <Grid ColumnDefinitions="Auto,*,Auto">
+                <Grid ColumnDefinitions="Auto,*,Auto,Auto">
                     <Border
                         Grid.Column="0"
                         BackgroundColor="#EEEDFE"
@@ -300,7 +300,13 @@
                         <Label FontAttributes="Bold" FontSize="13" Text="Attach receipt" TextColor="#1a1a2e" />
                         <Label FontSize="11" Text="Auto-fills amount and items" TextColor="#aaa" />
                     </VerticalStackLayout>
-                    <Image Grid.Column="2" HeightRequest="16" WidthRequest="16" VerticalOptions="Center">
+                    <ActivityIndicator IsRunning="{Binding IsProcessingReceipt}"
+                                       IsVisible="{Binding IsProcessingReceipt}"
+                                       Color="#534AB7"
+                                       Grid.Column="2"
+                                       VerticalOptions="Center"
+                                       Margin="0,8,0,0" />
+                    <Image Grid.Column="3" HeightRequest="16" WidthRequest="16" VerticalOptions="Center">
                         <Image.Source>
                             <FontImageSource FontFamily="MaterialIcons" Glyph="&#xe5cc;" Color="#aaa" Size="16" />
                         </Image.Source>

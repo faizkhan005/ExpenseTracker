@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using ExpenseTracker.Application.DTO;
 using ExpenseTracker.Application.Interfaces;
+using ExpenseTracker.Application.Services;
 using ExpenseTracker.Models;
 using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
@@ -17,15 +18,18 @@ public partial class InsightsViewModel : ObservableObject
     private readonly IIntelligenceService _intelligenceService;
     private readonly IExpenseService _expenseService;
     private readonly IBudgetService _budgetService;
+    private readonly IExportService _exportService;
 
     public InsightsViewModel(
         IIntelligenceService intelligenceService,
         IExpenseService expenseService,
-        IBudgetService budgetService)
+        IBudgetService budgetService,
+        IExportService exportService)
     {
         _intelligenceService = intelligenceService;
         _expenseService = expenseService;
         _budgetService = budgetService;
+        _exportService = exportService;
 
         SelectSegmentCommand = new RelayCommand<string>(SelectSegment);
         ExportCommand = new AsyncRelayCommand(ExportAsync);
@@ -188,18 +192,46 @@ public partial class InsightsViewModel : ObservableObject
     private async Task LoadTipsAsync(DateTime now)
     {
         IsLoadingTips = true;
-        var tips = await _intelligenceService.GetSavingsTipsAsync(now.Year, now.Month);
-        SavingsTips = [.. tips.Select(t => new SavingsTipDisplay(t))];
 
-        // Load AI tips in background
+        // Load rule-based tips immediately so something shows right away
+        var ruleTips = await _intelligenceService.GetSavingsTipsAsync(now.Year, now.Month);
+        SavingsTips = new ObservableCollection<SavingsTipDisplay>(
+            ruleTips.Select(t => new SavingsTipDisplay(t)));
+
+        // If no rule-based tips (e.g. no data yet), show a placeholder
+        if (!SavingsTips.Any())
+        {
+            SavingsTips.Add(new SavingsTipDisplay(new SavingsTip
+            {
+                Title = "Keep logging to get tips",
+                Body = "Add at least a week of expenses and we'll analyse your spending patterns.",
+                PotentialSaving = 0,
+                CategoryName = "Other",
+                IsAiGenerated = false
+            }));
+        }
+
+        // Load AI tips in background — append when ready
         _ = Task.Run(async () =>
         {
-            var aiTips = await _intelligenceService.GetAiSavingsTipsAsync(now.Year, now.Month);
-            MainThread.BeginInvokeOnMainThread(() =>
+            try
             {
-                foreach (SavingsTip t in aiTips) SavingsTips.Add(new SavingsTipDisplay(t));
-                IsLoadingTips = false;
-            });
+                var aiTips = await _intelligenceService.GetAiSavingsTipsAsync(now.Year, now.Month);
+
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    foreach (var t in aiTips)
+                        SavingsTips.Add(new SavingsTipDisplay(t));
+                });
+            }
+            catch
+            {
+                // AI tips are optional — silently skip if API call fails
+            }
+            finally
+            {
+                MainThread.BeginInvokeOnMainThread(() => IsLoadingTips = false);
+            }
         });
     }
 
@@ -210,5 +242,24 @@ public partial class InsightsViewModel : ObservableObject
         IsTrendsSelected = seg == "trends";
     }
 
-    private Task ExportAsync() => Task.CompletedTask;
+    private async Task ExportAsync() 
+    {
+        try
+        {
+            var now = DateTime.Now;
+            var csv = await _exportService.ExportToCsvAsync(now.Year, now.Month);
+            var path = Path.Combine(FileSystem.CacheDirectory, $"insights_{now:yyyy_MM}.csv");
+            await File.WriteAllTextAsync(path, csv);
+
+            await Share.RequestAsync(new ShareFileRequest
+            {
+                Title = $"Insights {now:MMMM yyyy}",
+                File = new ShareFile(path)
+            });
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlertAsync("Export failed", ex.Message, "OK");
+        }
+    }
 }

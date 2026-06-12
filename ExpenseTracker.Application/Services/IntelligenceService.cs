@@ -7,12 +7,10 @@ namespace ExpenseTracker.Application.Services;
 public class IntelligenceService : IIntelligenceService
 {
     private readonly IExpenseService _expenseService;
-    private readonly ILineItemRepository _lineItemRepo;
 
     public IntelligenceService(IExpenseService expenseService, ILineItemRepository lineItemRepo)
     {
         _expenseService = expenseService;
-        _lineItemRepo = lineItemRepo;
     }
 
     public async Task<List<SavingsTip>> GetSavingsTipsAsync(int year, int month)
@@ -148,7 +146,7 @@ public class IntelligenceService : IIntelligenceService
                 new StringContent(requestBody, System.Text.Encoding.UTF8, "application/json"));
 
             if (!response.IsSuccessStatusCode)
-                return new List<SavingsTip>();
+                return [];
 
             var json = await response.Content.ReadAsStringAsync();
             var parsed = System.Text.Json.JsonDocument.Parse(json);
@@ -157,15 +155,15 @@ public class IntelligenceService : IIntelligenceService
                 .GetProperty("text")
                 .GetString() ?? "[]";
             var tips = System.Text.Json.JsonSerializer.Deserialize<List<AiTipDto>>(content)
-                       ?? new List<AiTipDto>();
+                       ?? [];
 
-            return tips.Select(t => new SavingsTip
+            return [.. tips.Select(t => new SavingsTip
             {
                 Title = t.title,
                 Body = t.body,
                 PotentialSaving = (decimal)t.potentialSaving,
                 IsAiGenerated = true
-            }).ToList();
+            })];
         }
         catch
         {

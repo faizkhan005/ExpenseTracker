@@ -31,5 +31,10 @@
 
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Used to prompt you after visiting stores</string>
+
+	<key>NSCameraUsageDescription</key>
+	<string>Used to scan receipts</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Used to pick receipt photos</string>
 </dict>
 </plist>
