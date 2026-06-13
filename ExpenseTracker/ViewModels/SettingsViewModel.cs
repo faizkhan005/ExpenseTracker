@@ -90,11 +90,15 @@ public partial class SettingsViewModel : ObservableObject
 
     private async Task AddCategoryAsync()
     {
-        var name = await Shell.Current.DisplayPromptAsync("New category", "Enter category name:");
+        var name = await Shell.Current.DisplayPromptAsync(
+            "New category",
+            "Enter a name for your category:",
+            placeholder: "e.g. Gym, Baby, Hobbies");
+
         if (string.IsNullOrWhiteSpace(name)) return;
 
-        var category = new Category { Name = name, IconKey = "dots", ColorHex = "#534AB7", BackgroundHex = "#EEEDFE" };
-        await _categoryService.AddAsync(category);
+        await Shell.Current.GoToAsync($"IconPickerPage?categoryName={Uri.EscapeDataString(name)}");
+
         await LoadDataAsync();
     }
 

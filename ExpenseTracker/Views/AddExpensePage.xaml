@@ -9,7 +9,7 @@
              Shell.NavBarIsVisible="False">
 
     <ContentPage.Resources>
-        <ResourceDictionary>
+        <ResourceDictionary>    
             <Color x:Key="PrimaryPurple">#534AB7</Color>
         </ResourceDictionary>
         <ResourceDictionary>

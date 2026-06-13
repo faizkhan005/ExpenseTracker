@@ -12,10 +12,10 @@ public class Category : BaseEntity
     [NotNull, MaxLength(50)]
     public string Name { get; set; } = string.Empty;
 
-    /// <summary>Icon glyph key for FontImageSource e.g. "cart", "car", "home"
+    /// <summary>Stores the actual Material Icons glyph e.g. "\ue2e7
     /// </summary>
     [MaxLength(50)]
-    public string IconKey { get; set; } = string.Empty;
+    public string IconGlyph { get; set; } = string.Empty;
 
     /// <summary>Hex color for the icon foreground e.g. #3B6D11
     /// </summary>

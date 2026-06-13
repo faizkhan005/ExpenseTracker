@@ -68,6 +68,7 @@ namespace ExpenseTracker
             builder.Services.AddTransient<InsightsViewModel>();
             builder.Services.AddTransient<NotificationsViewModel>();
             builder.Services.AddTransient<SettingsViewModel>();
+            builder.Services.AddTransient<IconPickerViewModel>();
 
             //Views
             builder.Services.AddTransient<AddExpensePage>();
@@ -76,10 +77,13 @@ namespace ExpenseTracker
             builder.Services.AddTransient<InsightsPage>();
             builder.Services.AddTransient<NotificationsPage>();
             builder.Services.AddTransient<SettingsPage>();
+            builder.Services.AddTransient<IconPickerPage>();
 
             //Routes
             Routing.RegisterRoute("AddExpensePage", typeof(AddExpensePage));
-            Routing.RegisterRoute("NotificationsPage", typeof(Views.NotificationsPage));
+            Routing.RegisterRoute("NotificationsPage", typeof(NotificationsPage));
+            Routing.RegisterRoute("InsightsPage", typeof(InsightsPage));
+            Routing.RegisterRoute("IconPickerPage", typeof(IconPickerPage));
 
 #if DEBUG
             builder.Logging.AddDebug();
