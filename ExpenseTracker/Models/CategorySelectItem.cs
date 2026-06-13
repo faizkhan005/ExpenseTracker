@@ -28,6 +28,6 @@ public partial class CategorySelectItem : ObservableObject
         ColorHex = c.ColorHex;
         IsSystem = c.IsSystem;
         BackgroundHex = c.BackgroundHex;
-        IconGlyph = CategoryIconMap.GetGlyph(c.IconKey);
+        IconGlyph = c.IconGlyph;
     }
 }

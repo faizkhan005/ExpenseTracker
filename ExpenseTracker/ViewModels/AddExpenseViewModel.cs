@@ -180,7 +180,16 @@ public partial class AddExpenseViewModel : ObservableObject
         else
             await _expenseService.AddExpenseAsync(expense, _scannedLineItems);
 
-        await Shell.Current.GoToAsync("//Dashboard");
+        if (Shell.Current.Navigation.NavigationStack.Count > 1)
+        {
+            // Opened from a button click: pop back to the previous page
+            await Shell.Current.GoToAsync("..");
+        }
+        else
+        {
+            // Opened directly from a shell tab: reset to the Dashboard route
+            await Shell.Current.GoToAsync("//Dashboard");
+        }
     }
 
     private async Task CancelAsync() => await Shell.Current.GoToAsync("//Dashboard");
@@ -206,7 +215,7 @@ public partial class AddExpenseViewModel : ObservableObject
                 var status = await Permissions.RequestAsync<Permissions.Camera>();
                 if (status != PermissionStatus.Granted)
                 {
-                    await Shell.Current.DisplayAlert(
+                    await Shell.Current.DisplayAlertAsync(
                         "Permission needed",
                         "Camera permission is required to take a photo.",
                         "OK");
@@ -215,7 +224,7 @@ public partial class AddExpenseViewModel : ObservableObject
 
                 if (!MediaPicker.Default.IsCaptureSupported)
                 {
-                    await Shell.Current.DisplayAlert(
+                    await Shell.Current.DisplayAlertAsync(
                         "Not supported",
                         "Camera capture is not supported on this device.",
                         "OK");
@@ -230,13 +239,12 @@ public partial class AddExpenseViewModel : ObservableObject
             }
             else
             {
-                // Singular — picks ONE photo. Not deprecated.
-                // (PickPhotosAsync — plural — is for multi-select and returns List<FileResult>,
-                //  which is a different API for a different use case, not a replacement.)
-                result = await MediaPicker.Default.PickPhotoAsync(new MediaPickerOptions
+                var photoResult = await MediaPicker.PickPhotosAsync(new MediaPickerOptions
                 {
-                    Title = "Choose a receipt photo"
+                    Title = "Choose a receipt photo",
+                    SelectionLimit = 1
                 });
+                result = photoResult?.FirstOrDefault();
             }
         }
         catch (FeatureNotSupportedException)

@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="ExpenseTracker.Views.IconPickerPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:ExpenseTracker.ViewModels"
+             xmlns:converters="clr-namespace:ExpenseTracker.Converters"
+             xmlns:models="clr-namespace:ExpenseTracker.Models"
+             x:DataType="vm:IconPickerViewModel"
+             Shell.NavBarIsVisible="False">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Color x:Key="PrimaryPurple">#534AB7</Color>
+        </ResourceDictionary>
+        <ResourceDictionary>
+            <converters:IconBgConverter         x:Key="IconBgConverter" />
+            <converters:IconStrokeConverter     x:Key="IconStrokeConverter" />
+            <converters:IconColorConverter      x:Key="IconColorConverter" />
+            <converters:IconLabelColorConverter x:Key="IconLabelColorConverter" />
+            <converters:DoneBgConverter         x:Key="DoneBgConverter" />
+            <converters:DoneTextConverter       x:Key="DoneTextConverter" />
+            <converters:InverseBoolConverter    x:Key="InverseBoolConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
+
+        <!-- TOP BAR -->
+        <Grid
+            Grid.Row="0"
+            Padding="16,52,16,12"
+            ColumnDefinitions="Auto,*,Auto">
+            <Border
+                Grid.Column="0"
+                BackgroundColor="#F1EFF8"
+                HeightRequest="34"
+                StrokeShape="RoundRectangle 8"
+                StrokeThickness="0"
+                WidthRequest="34"
+                VerticalOptions="Center">
+                <Image HeightRequest="18" WidthRequest="18"
+                       HorizontalOptions="Center" VerticalOptions="Center">
+                    <Image.Source>
+                        <FontImageSource FontFamily="MaterialIcons"
+                                         Glyph="&#xe5cb;"
+                                         Color="#534AB7"
+                                         Size="18" />
+                    </Image.Source>
+                </Image>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding CancelCommand}" />
+                </Border.GestureRecognizers>
+            </Border>
+
+            <Label
+                Grid.Column="1"
+                FontAttributes="Bold"
+                FontSize="17"
+                HorizontalOptions="Center"
+                Text="Choose icon"
+                TextColor="#1a1a2e"
+                VerticalOptions="Center" />
+
+            <!-- Done button — only enabled when icon selected -->
+            <Border
+                Grid.Column="2"
+                BackgroundColor="{Binding HasSelection, Converter={StaticResource DoneBgConverter}}"
+                Padding="14,8"
+                StrokeShape="RoundRectangle 10"
+                StrokeThickness="0"
+                VerticalOptions="Center">
+                <Label
+                    FontAttributes="Bold"
+                    FontSize="13"
+                    Text="Done"
+                    TextColor="{Binding HasSelection, Converter={StaticResource DoneTextConverter}}" />
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding ConfirmCommand}" />
+                </Border.GestureRecognizers>
+            </Border>
+        </Grid>
+
+        <!-- SEARCH -->
+        <Border
+            Grid.Row="1"
+            BackgroundColor="#F5F5FA"
+            Margin="16,0,16,12"
+            Padding="12,0"
+            StrokeShape="RoundRectangle 12"
+            StrokeThickness="0"
+            HeightRequest="44">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <Image Grid.Column="0"
+                       HeightRequest="16" WidthRequest="16"
+                       VerticalOptions="Center" Margin="0,0,8,0">
+                    <Image.Source>
+                        <FontImageSource FontFamily="MaterialIcons"
+                                         Glyph="&#xe8b6;"
+                                         Color="#aaa"
+                                         Size="16" />
+                    </Image.Source>
+                </Image>
+                <Entry
+                    Grid.Column="1"
+                    BackgroundColor="Transparent"
+                    FontSize="13"
+                    Placeholder="Search icons..."
+                    PlaceholderColor="#bbb"
+                    Text="{Binding SearchQuery}"
+                    TextColor="#1a1a2e"
+                    VerticalOptions="Center" />
+                <Image
+                    Grid.Column="2"
+                    HeightRequest="16" WidthRequest="16"
+                    VerticalOptions="Center"
+                    IsVisible="{Binding HasSearchQuery}">
+                    <Image.Source>
+                        <FontImageSource FontFamily="MaterialIcons"
+                                         Glyph="&#xe5cd;"
+                                         Color="#aaa"
+                                         Size="16" />
+                    </Image.Source>
+                    <Image.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding ClearSearchCommand}" />
+                    </Image.GestureRecognizers>
+                </Image>
+            </Grid>
+        </Border>
+
+        <!-- GROUP TABS -->
+        <ScrollView
+            Grid.Row="2"
+            Orientation="Horizontal"
+            HorizontalScrollBarVisibility="Never"
+            Margin="0,0,0,12"
+            IsVisible="{Binding IsSearching, Converter={StaticResource InverseBoolConverter}}">
+            <HorizontalStackLayout Padding="16,0" Spacing="8">
+                <BindableLayout.ItemsSource>
+                    <Binding Path="Groups" />
+                </BindableLayout.ItemsSource>
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="models:IconGroupViewModel">
+                        <Border
+                            Padding="14,7"
+                            StrokeShape="RoundRectangle 20"
+                            StrokeThickness="1"
+                            BackgroundColor="{Binding IsSelected, Converter={StaticResource PillBgConverter}}"
+                            Stroke="{Binding IsSelected, Converter={StaticResource PillStrokeConverter}}">
+                            <Label
+                                FontSize="12"
+                                FontAttributes="{Binding IsSelected, Converter={StaticResource PillFontConverter}}"
+                                Text="{Binding Name}"
+                                TextColor="{Binding IsSelected, Converter={StaticResource PillTextConverter}}" />
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:IconPickerViewModel}}, Path=SelectGroupCommand}"
+                                    CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </HorizontalStackLayout>
+        </ScrollView>
+
+        <!-- ICON GRID -->
+        <CollectionView
+            Grid.Row="3"
+            ItemsSource="{Binding FilteredIcons}"
+            Margin="16,0">
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout
+                    Orientation="Vertical"
+                    Span="5"
+                    HorizontalItemSpacing="8"
+                    VerticalItemSpacing="8" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:IconItemViewModel">
+                    <Border
+                        HeightRequest="64"
+                        StrokeShape="RoundRectangle 12"
+                        StrokeThickness="1.5"
+                        BackgroundColor="{Binding IsSelected, Converter={StaticResource IconBgConverter}}"
+                        Stroke="{Binding IsSelected, Converter={StaticResource IconStrokeConverter}}">
+                        <Grid RowDefinitions="*,Auto" RowSpacing="4" Padding="4,8">
+                            <Image
+                                Grid.Row="0"
+                                HeightRequest="24"
+                                WidthRequest="24"
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center">
+                                <Image.Source>
+                                    <FontImageSource
+                                        FontFamily="MaterialIcons"
+                                        Glyph="{Binding Glyph}"
+                                        Color="{Binding IsSelected, Converter={StaticResource IconColorConverter}}"
+                                        Size="24" />
+                                </Image.Source>
+                            </Image>
+                            <Label
+                                Grid.Row="1"
+                                FontSize="8"
+                                HorizontalOptions="Center"
+                                HorizontalTextAlignment="Center"
+                                LineBreakMode="TailTruncation"
+                                Text="{Binding Label}"
+                                TextColor="{Binding IsSelected, Converter={StaticResource IconLabelColorConverter}}" />
+                        </Grid>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:IconPickerViewModel}}, Path=SelectIconCommand}"
+                                CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+            <!-- Empty search state -->
+            <CollectionView.EmptyView>
+                <VerticalStackLayout
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center"
+                    Spacing="10"
+                    Padding="40">
+                    <Image HeightRequest="48" WidthRequest="48"
+                           HorizontalOptions="Center" Opacity="0.3">
+                        <Image.Source>
+                            <FontImageSource FontFamily="MaterialIcons"
+                                             Glyph="&#xe8b6;"
+                                             Color="#aaa"
+                                             Size="48" />
+                        </Image.Source>
+                    </Image>
+                    <Label
+                        Text="No icons found"
+                        FontSize="14"
+                        FontAttributes="Bold"
+                        TextColor="#aaa"
+                        HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+        </CollectionView>
+
+        <!-- SELECTED PREVIEW -->
+        <Border
+            Grid.Row="4"
+            IsVisible="{Binding HasSelection}"
+            BackgroundColor="#F8F8FC"
+            Margin="16,12,16,32"
+            Padding="16,12"
+            StrokeShape="RoundRectangle 14"
+            StrokeThickness="0">
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                <Border
+                    Grid.Column="0"
+                    BackgroundColor="{Binding SelectedBackgroundColor}"
+                    HeightRequest="44"
+                    WidthRequest="44"
+                    StrokeShape="RoundRectangle 11"
+                    StrokeThickness="0">
+                    <Image HeightRequest="22" WidthRequest="22"
+                           HorizontalOptions="Center" VerticalOptions="Center">
+                        <Image.Source>
+                            <FontImageSource
+                                FontFamily="MaterialIcons"
+                                Glyph="{Binding SelectedGlyph}"
+                                Color="{Binding SelectedIconColor}"
+                                Size="22" />
+                        </Image.Source>
+                    </Image>
+                </Border>
+                <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                    <Label
+                        FontAttributes="Bold"
+                        FontSize="13"
+                        Text="{Binding SelectedLabel}"
+                        TextColor="#1a1a2e" />
+                    <Label
+                        FontSize="11"
+                        Text="Selected icon"
+                        TextColor="#aaa" />
+                </VerticalStackLayout>
+            </Grid>
+        </Border>
+
+    </Grid>
+</ContentPage>

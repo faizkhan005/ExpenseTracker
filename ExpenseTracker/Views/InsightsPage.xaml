@@ -166,7 +166,7 @@
                                             <Image HeightRequest="16" WidthRequest="16" HorizontalOptions="Center" VerticalOptions="Center">
                                                 <Image.Source>
                                                     <FontImageSource FontFamily="MaterialIcons"
-                                                                     Glyph="{Binding Category.IconKey}"
+                                                                     Glyph="{Binding Category.IconGlyph}"
                                                                      Color="{Binding Category.ColorHex}"
                                                                      Size="16" />
                                                 </Image.Source>

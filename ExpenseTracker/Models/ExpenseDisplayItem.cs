@@ -37,17 +37,10 @@ public class ExpenseDisplayItem
             _ => "manual"
         };
 
-        (IconGlyph, IconBackground, IconColor, CategoryBackground, CategoryColor) = e.Category?.Name switch
-        {
-            "Food" => ("\ue2e7", Color.FromArgb("#EAF3DE"), Color.FromArgb("#3B6D11"), Color.FromArgb("#EAF3DE"), Color.FromArgb("#3B6D11")),
-            "Transport" => ("\ue531", Color.FromArgb("#E6F1FB"), Color.FromArgb("#185FA5"), Color.FromArgb("#E6F1FB"), Color.FromArgb("#185FA5")),
-            "Housing" => ("\ue88a", Color.FromArgb("#FAECE7"), Color.FromArgb("#712B13"), Color.FromArgb("#FAECE7"), Color.FromArgb("#712B13")),
-            "Dining" => ("\ue56c", Color.FromArgb("#FAEEDA"), Color.FromArgb("#633806"), Color.FromArgb("#FAEEDA"), Color.FromArgb("#633806")),
-            "Health" => ("\ue548", Color.FromArgb("#E1F5EE"), Color.FromArgb("#0F6E56"), Color.FromArgb("#E1F5EE"), Color.FromArgb("#0F6E56")),
-            "Subscriptions" => ("\ue325", Color.FromArgb("#EEEDFE"), Color.FromArgb("#534AB7"), Color.FromArgb("#EEEDFE"), Color.FromArgb("#534AB7")),
-            "Shopping" => ("\ue8cc", Color.FromArgb("#FBEAF0"), Color.FromArgb("#72243E"), Color.FromArgb("#FBEAF0"), Color.FromArgb("#72243E")),
-            "Income" => ("\ue227", Color.FromArgb("#E1F5EE"), Color.FromArgb("#0F6E56"), Color.FromArgb("#E1F5EE"), Color.FromArgb("#0F6E56")),
-            _ => ("\ue5d3", Color.FromArgb("#F1EFE8"), Color.FromArgb("#5F5E5A"), Color.FromArgb("#F1EFE8"), Color.FromArgb("#5F5E5A")),
-        };
+        IconGlyph = e.Category?.IconGlyph ?? "\ue5d3";
+        IconBackground = Color.FromArgb(e.Category?.BackgroundHex ?? "#F1EFE8");
+        IconColor = Color.FromArgb(e.Category?.ColorHex ?? "#5F5E5A");
+        CategoryBackground = Color.FromArgb(e.Category?.BackgroundHex ?? "#F1EFE8");
+        CategoryColor = Color.FromArgb(e.Category?.ColorHex ?? "#5F5E5A");
     }
 }

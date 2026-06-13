@@ -73,17 +73,17 @@ public class AppDbContext
                 return; // Already seeded
 
             var defaults = new List<Category>
-        {
-            new() { Name = "Food",          IconKey = "cart",       ColorHex = "#3B6D11", BackgroundHex = "#EAF3DE", IsSystem = true },
-            new() { Name = "Transport",     IconKey = "car",        ColorHex = "#185FA5", BackgroundHex = "#E6F1FB", IsSystem = true },
-            new() { Name = "Housing",       IconKey = "home",       ColorHex = "#712B13", BackgroundHex = "#FAECE7", IsSystem = true },
-            new() { Name = "Dining",        IconKey = "fork",       ColorHex = "#633806", BackgroundHex = "#FAEEDA", IsSystem = true },
-            new() { Name = "Health",        IconKey = "health",     ColorHex = "#0F6E56", BackgroundHex = "#E1F5EE", IsSystem = true },
-            new() { Name = "Subscriptions", IconKey = "phone",      ColorHex = "#534AB7", BackgroundHex = "#EEEDFE", IsSystem = true },
-            new() { Name = "Shopping",      IconKey = "bag",        ColorHex = "#72243E", BackgroundHex = "#FBEAF0", IsSystem = true },
-            new() { Name = "Income",        IconKey = "bank",       ColorHex = "#0F6E56", BackgroundHex = "#E1F5EE", IsSystem = true },
-            new() { Name = "Other",         IconKey = "dots",       ColorHex = "#5F5E5A", BackgroundHex = "#F1EFE8", IsSystem = true },
-        };
+            {
+                new() { Name = "Food",          IconGlyph = "\ue2e7", ColorHex = "#3B6D11", BackgroundHex = "#EAF3DE", IsSystem = true },
+                new() { Name = "Transport",     IconGlyph = "\ue531", ColorHex = "#185FA5", BackgroundHex = "#E6F1FB", IsSystem = true },
+                new() { Name = "Housing",       IconGlyph = "\ue88a", ColorHex = "#712B13", BackgroundHex = "#FAECE7", IsSystem = true },
+                new() { Name = "Dining",        IconGlyph = "\ue56c", ColorHex = "#633806", BackgroundHex = "#FAEEDA", IsSystem = true },
+                new() { Name = "Health",        IconGlyph = "\ue548", ColorHex = "#0F6E56", BackgroundHex = "#E1F5EE", IsSystem = true },
+                new() { Name = "Subscriptions", IconGlyph = "\ue325", ColorHex = "#534AB7", BackgroundHex = "#EEEDFE", IsSystem = true },
+                new() { Name = "Shopping",      IconGlyph = "\ue8cc", ColorHex = "#72243E", BackgroundHex = "#FBEAF0", IsSystem = true },
+                new() { Name = "Income",        IconGlyph = "\ue227", ColorHex = "#0F6E56", BackgroundHex = "#E1F5EE", IsSystem = true },
+                new() { Name = "Other",         IconGlyph = "\ue5d3", ColorHex = "#5F5E5A", BackgroundHex = "#F1EFE8", IsSystem = true },
+            };
 
             await db.InsertAllAsync(defaults);
 
