@@ -7,42 +7,39 @@ on:
      - '**/*.md'
      - '**/*.gitignore'
      - '**/*.gitattributes'
-  pull_request:
-    branches: [main]
   workflow_dispatch:
 permissions: 
   contents: read
 jobs:
   build-android:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     name: Android Build
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v1
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
-          include-prerelease: false
-
-      - uses: actions/setup-java@v2
-        with:
-          distribution: 'microsoft'
-          java-version: '11'
 
       - name: Install MAUI Workloads
         run: |
           dotnet workload install android --ignore-failed-sources
           dotnet workload install maui --ignore-failed-sources
+          
       - name: Restore Dependencies
-        run: dotnet restore your-project.csproj
-
+        run: dotnet restore 
+        
+      - name: Decode Android keystore
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > myapp.keystore
+          
       - name: Publish MAUI Android
         run: dotnet publish -f:net10.0-android -c:Release /p:AndroidSigningKeyPass=${{secrets.keystorepassword}} /p:AndroidSigningStorePass=${{secrets.keystorepassword}}
 
       - name: Upload Android Artifact
-        uses: actions/upload-artifact@v2.3.1
+        uses: actions/upload-artifact@v4
         with:
-          name: android-ci-build
-          path: YourProject/bin/Release/net7.0-android/*Signed.apk*
+          name: signed-apk
+          path: '**/bin/Release/net10.0-android/publish/*.apk'
