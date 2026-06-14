@@ -412,3 +412,5 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+/keystore.txt
+/myapp.keystore
