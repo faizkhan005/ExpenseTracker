@@ -48,7 +48,7 @@ jobs:
           echo "KEYSTORE_PATH=$path" >> $env:GITHUB_ENV
           
       - name: Publish MAUI Android
-        run: dotnet publish -f:net10.0-android -c:Release /p:AndroidSigningKeyStore="${{ env.KEYSTORE_PATH }}" /p:AndroidSigningKeyPass=${{secrets.keystorepassword}} /p:AndroidSigningStorePass=${{secrets.keystorepassword}}
+        run: dotnet publish ExpenseTracker/ExpenseTracker.csproj -f:net10.0-android -c:Release /p:AndroidSigningKeyStore="${{ env.KEYSTORE_PATH }}" /p:AndroidSigningKeyPass=${{secrets.keystorepassword}} /p:AndroidSigningStorePass=${{secrets.keystorepassword}}
 
       - name: Upload Android Artifact
         uses: actions/upload-artifact@v4
