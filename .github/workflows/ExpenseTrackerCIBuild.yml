@@ -29,6 +29,13 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Verify secret length
+        shell: pwsh
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          Write-Host "Length = $($env:KEYSTORE_BASE64.Length)"
+
       - name: Install MAUI Workloads
         run: |
           dotnet workload install android --ignore-failed-sources
