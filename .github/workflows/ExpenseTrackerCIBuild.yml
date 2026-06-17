@@ -11,6 +11,24 @@ on:
 permissions: 
   contents: read
 jobs:
+  run-tests:
+    runs-on: windows-latest
+    name: Run Unit Tests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore Dependencies
+        run: dotnet restore 
+
+      - name: Run Tests
+        run: dotnet test --configuration Release --no-restore --verbosity normal
+
   build-android:
     runs-on: windows-latest
     name: Android Build
