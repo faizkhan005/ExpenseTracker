@@ -2,6 +2,7 @@
   <Project Path="ExpenseTracker.Application/ExpenseTracker.Application.csproj" />
   <Project Path="ExpenseTracker.Domain/ExpenseTracker.Domain.csproj" />
   <Project Path="ExpenseTracker.Infrastructure/ExpenseTracker.Infrastructure.csproj" />
+  <Project Path="ExpenseTracker.Tests/ExpenseTracker.Tests.csproj" Id="c60f08e4-55e0-4a03-9d3a-d666b9e676d6" />
   <Project Path="ExpenseTracker/ExpenseTracker.csproj">
     <Deploy Solution="Debug|*" />
   </Project>
